@@ -29,7 +29,7 @@ source("https://raw.githubusercontent.com/manubio13/ME_Cobos_FProject/master/mod
 
 Test if it can create a batch file for running maxent models
 
-```{r ku.enm.cal_test_1, echo=T, cache=TRUE}
+```{r cal_test_1, echo=T}
 #Variables with information to be used as arguments
 occ_all <- "pemp_all.csv"
 occ_tra <- "pemp_tra.csv"
@@ -44,46 +44,25 @@ running <- FALSE
 ku.enm.cal(occ.all = occ_all, occ.tra = occ_tra, M.var.dir = M_var_dir, batch = batch_cal,
            out.dir = cal_dir, reg.mult = reg_mul, f.clas = fea_cs, run = running)
 
-if (exists("emp_enm_calibration_models1.bat"))
-{
-  print("passed")
-} else
-{
-  print("failed")
+if (file.exists("emp_enm_calibration_models1.bat")) {
+  cat("\npassed")
+} else {
+  cat("\nfailed")
 }
-```
-
-Test if it runs the models automatically if run = TRUE. VISUAL TEST
-
-```{r ku.enm.cal_test_2, echo=T, cache=TRUE}
-#Variables with information to be used as arguments
-running <- TRUE
-
-#Executing the function
-ku.enm.cal(occ.all = occ_all, occ.tra = occ_tra, M.var.dir = M_var_dir, batch = batch_cal,
-           out.dir = cal_dir, reg.mult = reg_mul, f.clas = fea_cs, run = running)
 ```
 
 Test if batch length is appropriate acording to feature classes selection
 
-```{r ku.enm.cal_test_3, echo=T, cache=TRUE}
-batch_cal <- "emp_enm_calibration_models2"
-running <- FALSE
-
-#Executing the function
-ku.enm.cal(occ.all = occ_all, occ.tra = occ_tra, M.var.dir = M_var_dir, batch = batch_cal,
-           out.dir = cal_dir, reg.mult = reg_mul, f.clas = fea_cs, run = running)
-
+```{r cal_test_2, echo=T, cache=TRUE}
 #Number of models expected to result with the defined varaibles
-n <- 150
-bf <- readLines("emp_enm_calibration_models2.bat") 
+if(fea_cs == "all" | fea_cs == "basic" | fea_cs == "no.t.h" |)
+n <- prod(length(reg_mul), length(dir("M")), 2) #number of potential combinations times two (two models for each combination are being created)
+bf <- readLines("emp_enm_calibration_models1.bat") 
 nr <- length(bf)
 
-if (nr == n)
-{
+if (nr == n) {
   print("passed")
-} else
-{
+} else {
   print("failed")
 }
 ```

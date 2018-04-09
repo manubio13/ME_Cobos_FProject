@@ -1,4 +1,4 @@
-proc <- function(presencefile, predictionfile, omissionval = 0.05, randompercent = 50, noofiteration = 1000) {
+ku.enm.proc <- function(presencefile, predictionfile, omissionval = 0.05, randompercent = 50, noofiteration = 1000) {
   
   source("https://raw.githubusercontent.com/manubio13/ME_Cobos_FProject/master/a.pred.pres.R")
   source("https://raw.githubusercontent.com/manubio13/ME_Cobos_FProject/master/g.xy.tab.R")
