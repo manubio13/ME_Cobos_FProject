@@ -29,7 +29,7 @@
 
 ku.enm.cal <- function(occ.all, occ.tra, M.var.dir, batch, out.dir, reg.mult, f.clas = "all", run = TRUE){
   
-  source("C:/Users/Marlon/Documents/Rku.enm_nog/Functions/get.free.ram.R")
+  source("https://raw.githubusercontent.com/manubio13/ME_Cobos_FProject/master/get.free.ram.R")
   
   #Data
   ##Environmental variables sets
@@ -137,8 +137,11 @@ ku.enm.cal <- function(occ.all, occ.tra, M.var.dir, batch, out.dir, reg.mult, f.
   sink()
   suppressMessages(close(pb))
   
-  cat("\nIf asked, allow runing as administrator.")
-  shell.exec(file.path(getwd(), paste(batch, ".bat", sep = "")))
+  cat("\nIf asked and run = TRUE, allow runing as administrator.")
+  
+  if(run == TRUE){
+    shell.exec(file.path(getwd(), paste(batch, ".bat", sep = ""))) 
+  }
   
   cat("\nProcess finished\n")
   cat(paste("A maxent batch file for creating", i * j * k, "calibration models has been written", sep = " "))
