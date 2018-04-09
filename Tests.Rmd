@@ -2,7 +2,7 @@
 title: "Tests"
 author: "Marlon E. Cobos"
 date: "March 31, 2018"
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -20,7 +20,7 @@ occ_tra <- "Sp_cal.csv"
 M_var_dir <- "M_variables"
 batch_cal <- "ku_enm_calibration_models"
 cal_dir <- "Calibration_Models"
-reg_mul <- c(seq(0.1,1,0.1),seq(2,6,1),8,10)
+reg_mul <- c(seq(0.5,1,0.1),seq(2,5,1))
 fea_cs <- "basic"
 running <- FALSE
 
