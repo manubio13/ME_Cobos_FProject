@@ -29,7 +29,7 @@ source("https://raw.githubusercontent.com/manubio13/ME_Cobos_FProject/master/mod
 
 Test if it can create a batch file for running maxent models
 
-```{r ku.enm.cal_test_1, echo=T}
+```{r ku.enm.cal_test_1, echo=T, cache=TRUE}
 #Variables with information to be used as arguments
 occ_all <- "pemp_all.csv"
 occ_tra <- "pemp_tra.csv"
@@ -55,7 +55,7 @@ if (exists("emp_enm_calibration_models1.bat"))
 
 Test if it runs the models automatically if run = TRUE. VISUAL TEST
 
-```{r ku.enm.cal_test_2, echo=T}
+```{r ku.enm.cal_test_2, echo=T, cache=TRUE}
 #Variables with information to be used as arguments
 running <- TRUE
 
@@ -66,7 +66,7 @@ ku.enm.cal(occ.all = occ_all, occ.tra = occ_tra, M.var.dir = M_var_dir, batch = 
 
 Test if batch length is appropriate acording to feature classes selection
 
-```{r ku.enm.cal_test_3, echo=T}
+```{r ku.enm.cal_test_3, echo=T, cache=TRUE}
 batch_cal <- "emp_enm_calibration_models2"
 running <- FALSE
 
@@ -93,7 +93,7 @@ if (nr == n)
 
 Test if it creates the folder for the evaluation results
 
-```{r ku.enm.eval_test_1, echo=T}
+```{r ku.enm.eval_test_1, echo=T, cache=TRUE}
 #Variables with information to be used as arguments
 occ_test <- "pemp_test.csv"
 out_eval <- "emp_enm_evaluation_results"
@@ -121,7 +121,7 @@ if (out_eval %in% dr)
 
 Test if all evaluation files were created
 
-```{r ku.enm.eval_test_2, echo=T}
+```{r ku.enm.eval_test_2, echo=T, cache=TRUE}
 #Files that should exist
 files <- c ("best_models_OR_AICc.csv", "evaluation_figure.png", "evaluation_results.csv", "evaluation_results.html", "evaluation_stats.csv")
 
@@ -141,7 +141,7 @@ if (files %in% ev_files)
 
 Test if folder for final models was created 
 
-```{r ku.enm.mod_test_1, echo=T}
+```{r ku.enm.mod_test_1, echo=T, cache=TRUE}
 #Variables with information to be used as arguments
 mod_dir <- "Final_Models"
 G_var_dir <- "G_variables"
@@ -169,7 +169,7 @@ if (G_var_dir %in% dr1)
 
 Test if all subdirectories were created for final models in the G_var_dir folder
 
-```{r ku.enm.cal_test_2, echo=T}
+```{r ku.enm.cal_test_2, echo=T, cache=TRUE}
 #Subdirectories that should exist
 dirn <- read.csv(paste(out_eval, "best_models_OR_AICc.csv", sep = "/"))[,1]
 ext_op <- c("E", "EC", "NE")
