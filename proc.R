@@ -1,8 +1,8 @@
 proc <- function(presencefile, predictionfile, omissionval = 0.05, randompercent = 50, noofiteration = 1000) {
   
-  source("C:/Users/Marlon/Documents/Rku.enm_nog/Functions/a.pred.pres.R")
-  source("C:/Users/Marlon/Documents/Rku.enm_nog/Functions/g.xy.tab.R")
-  source("C:/Users/Marlon/Documents/Rku.enm_nog/Functions/calc.auc.R")
+  source("https://raw.githubusercontent.com/manubio13/ME_Cobos_FProject/master/a.pred.pres.R")
+  source("https://raw.githubusercontent.com/manubio13/ME_Cobos_FProject/master/g.xy.tab.R")
+  source("https://raw.githubusercontent.com/manubio13/ME_Cobos_FProject/master/calc.auc.R")
   
   inrastlog <- predictionfile
   
