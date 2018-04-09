@@ -9,17 +9,33 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+## Loading packages and functions
+
+```{r packages_functions, echo=T}
+#Packages
+packages <- c("rmarkdown", "sqldf", "knitr", "ENMeval", "yaml")
+toInstall <- packages[!packages %in% installed.packages()]
+if(length(toInstall)>0L) install.packages(toInstall)
+lapply(packages, require, character.only = TRUE)
+
+#Functions
+source("https://raw.githubusercontent.com/manubio13/ME_Cobos_FProject/master/cal_function.R")
+source("https://raw.githubusercontent.com/manubio13/ME_Cobos_FProject/master/eval_function.R")
+source("https://raw.githubusercontent.com/manubio13/ME_Cobos_FProject/master/mod_function.R")
+```
+
+
 ## Tests for ku.enm.cal
 
 Test if it can create a batch file for running maxent models
 
 ```{r ku.enm.cal_test_1, echo=T}
 #Variables with information to be used as arguments
-occ_all <- "Sp_all.csv"
-occ_tra <- "Sp_cal.csv"
-M_var_dir <- "M_variables"
-batch_cal <- "ku_enm_calibration_models"
-cal_dir <- "Calibration_Models"
+occ_all <- "pemp_all.csv"
+occ_tra <- "pemp_tra.csv"
+M_var_dir <- "M"
+batch_cal <- "emp_enm_calibration_models1"
+cal_dir <- "Calibration_Models1"
 reg_mul <- c(seq(0.5,1,0.1),seq(2,5,1))
 fea_cs <- "basic"
 running <- FALSE
@@ -28,7 +44,7 @@ running <- FALSE
 ku.enm.cal(occ.all = occ_all, occ.tra = occ_tra, M.var.dir = M_var_dir, batch = batch_cal,
            out.dir = cal_dir, reg.mult = reg_mul, f.clas = fea_cs, run = running)
 
-if (exists("ku_enm_calibration_models.bat"))
+if (exists("emp_enm_calibration_models1.bat"))
 {
   print("passed")
 } else
@@ -51,7 +67,7 @@ ku.enm.cal(occ.all = occ_all, occ.tra = occ_tra, M.var.dir = M_var_dir, batch = 
 Test if batch length is appropriate acording to feature classes selection
 
 ```{r ku.enm.cal_test_3, echo=T}
-batch_cal <- "ku_enm_calibration_models1"
+batch_cal <- "emp_enm_calibration_models2"
 running <- FALSE
 
 #Executing the function
@@ -59,8 +75,8 @@ ku.enm.cal(occ.all = occ_all, occ.tra = occ_tra, M.var.dir = M_var_dir, batch = 
            out.dir = cal_dir, reg.mult = reg_mul, f.clas = fea_cs, run = running)
 
 #Number of models expected to result with the defined varaibles
-n <- 280
-bf <- readLines("ku_enm_calibration_models1.bat") 
+n <- 150
+bf <- readLines("emp_enm_calibration_models2.bat") 
 nr <- length(bf)
 
 if (nr == n)
@@ -79,8 +95,8 @@ Test if it creates the folder for the evaluation results
 
 ```{r ku.enm.eval_test_1, echo=T}
 #Variables with information to be used as arguments
-occ_test <- "Sp_eval.csv"
-out_eval <- "ku_enm_evaluation_results"
+occ_test <- "pemp_test.csv"
+out_eval <- "emp_enm_evaluation_results"
 ov <- 5
 rp <- 50
 ni <- 100
@@ -129,7 +145,7 @@ Test if folder for final models was created
 #Variables with information to be used as arguments
 mod_dir <- "Final_Models"
 G_var_dir <- "G_variables"
-rep <- 10
+rep <- 5
 rtyp <- "Bootstrap"
 ofor <- "logistic"
 pr <- TRUE
@@ -138,7 +154,7 @@ extyp <- "all"
 
 #Executing the function
 ku.enm.mod(occ.all = occ_all, M.var.dir = M_var_dir, out.eval = out_eval, rep.n = rep, rep.type = rtyp, 
-          out.dir = mod_dir, out.format = "logistic", project = pr, G.var.dir = G_var_dir, ext.type = extyp)
+          out.dir = mod_dir, out.format = ofor, project = pr, G.var.dir = G_var_dir, ext.type = extyp)
 
 dr1 <- dir()
 

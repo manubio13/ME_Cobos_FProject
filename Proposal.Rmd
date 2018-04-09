@@ -9,22 +9,65 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+### Introduction
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
-```{r cars}
-summary(cars)
+### Calibration models
+
+Calibration models are a large set of candidate models created to respond to the need to test multiple parameter combinations, for example, distinct regularization multiplier values, various feature classes, and different sets of environmental variables. 
+
+```{r}
+#Variables with information to be used as arguments
+occ_all <- "pemp_all.csv"
+occ_tra <- "pemp_tra.csv"
+M_var_dir <- "M"
+batch_cal <- "emp_enm_calibration_models"
+cal_dir <- "Calibration_Models"
+reg_mul <- c(seq(0.5,1,0.1),seq(2,5,1))
+fea_cs <- "basic"
+running <- FALSE
+
+ku.enm.cal(occ.all = occ_all, occ.tra = occ_tra, M.var.dir = M_var_dir, batch = batch_cal,
+           out.dir = cal_dir, reg.mult = reg_mul, f.clas = fea_cs, run = running)
 ```
 
-## Including Plots
 
-You can also embed plots, for example:
+### Evaluation and selection of best models
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+Evaluation is an important step in model calibration. This step centers on selecting candidate models and their associated parameters to identify the very best models for the purposes of the study. The ku.enm.eval function evaluates candidate models based on three distinct criteria: statistical significance (based on partial ROC), prediction ability (we use omission rates, but other metrics, such as overall correct classification rate, can also be used), and complexity (here evaluated using AICc). 
+
+```{r}
+#Variables with information to be used as arguments
+occ_test <- "pemp_test.csv"
+out_eval <- "emp_enm_evaluation_results"
+ov <- 5
+rp <- 50
+ni <- 100
+kt <- TRUE
+selc <- "OR_AICc"
+##Some of the variables used here as arguments were already created for the previous function
+
+ku.enm.eval(path = cal_dir, occ.all = occ_all, occ.tra = occ_tra, occ.test = occ_test, batch = batch_cal,
+            out.eval = out_eval, omi.val = ov, rand.perc = rp, no.inter = ni, kept = kt, selection = selc)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+### Final models creation
+
+After selecting parametrizations that produce the best models, the next step is to create the final models, and if needed transfer them to other environmental data sets (e.g., to other periods or geographic regions).
+
+```{r}
+#Variables with information to be used as arguments
+mod_dir <- "Final_Models"
+G_var_dir <- "G"
+##Most of the variables used here as arguments were already created for the previous function
+```
+
+The *ku.enm.mod* function has the following syntax:
+
+```{r}
+ku.enm.mod(occ.all = occ_all, M.var.dir = M_var_dir, out.eval = out_eval, rep.n = 10, rep.type = "Bootstrap", 
+out.dir = mod_dir, out.format = "logistic", project = TRUE, G.var.dir = G_var_dir, 
+ext.type = "all", write.mess = FALSE, write.clamp = FALSE)
+```
