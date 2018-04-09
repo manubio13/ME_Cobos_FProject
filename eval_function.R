@@ -60,10 +60,10 @@ ku.enm.eval <- function(path, occ.all, occ.tra, occ.test, batch, out.eval, omi.v
   
   #####
   #Functions
-  source("C:/Users/Marlon/Documents/Rku.enm_nog/Functions/n.par.R")
-  source("C:/Users/Marlon/Documents/Rku.enm_nog/Functions/ku.enm.proc.R")
-  source("C:/Users/Marlon/Documents/Rku.enm_nog/Functions/ku.enm.omrat.R")
-  source("C:/Users/Marlon/Documents/Rku.enm_nog/Functions/html.eval.R")
+  source("https://raw.githubusercontent.com/manubio13/ME_Cobos_FProject/master/n.par.R")
+  source("https://raw.githubusercontent.com/manubio13/ME_Cobos_FProject/master/proc.R")
+  source("https://raw.githubusercontent.com/manubio13/ME_Cobos_FProject/master/om_rate.R")
+  source("https://raw.githubusercontent.com/manubio13/ME_Cobos_FProject/master/html.eval.R")
   
   #####
   #Data
