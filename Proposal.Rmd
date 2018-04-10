@@ -20,7 +20,7 @@ dir.create(file.path(tempdir(), ".checkpoint"), recursive = TRUE, showWarnings =
 checkpoint("2018-04-05", checkpointLocation = tempdir())
 ```
 
-```{r packages_functions, echo=T, cache=TRUE, message=FALSE, warning=FALSE, results='hide'}
+```{r packages_functions, echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE, results='hide'}
 #Packages
 packages <- c("rmarkdown", "sqldf", "knitr", "ENMeval", "yaml")
 toInstall <- packages[!packages %in% installed.packages()]
@@ -43,6 +43,10 @@ The aim of this project is to contrast current results of conservation status as
 
 ### Methods
 
+#### Study site
+
+The study area is the entire Cuban archipelago. This insular country is part of the Great Antilles and its geological origin and history is one of the more complex of the world.
+
 #### Species and environmental data
 
 A total of 246 species occurrences were obtained from multiple databases and field expeditions. A spatial thining process was performed to reducing autocorrelation and a total of 64 records remained. These records were split by randomly selecting 25% of them for testing and the remaining for training models.
@@ -53,7 +57,7 @@ Bioclimatic variables from the WorldClim database REF were used as environmental
 
 A total of 150 candidate models were evaluated as part of the model calibration process. These models were created in Maxent with distinct parameters resulted from combining three sets of environmental predictors, 10 regularization multipliers, and 5 feature classes.
 
-```{r candidate_models, echo=TRUE, cache=TRUE, message=FALSE, warning=FALSE, results='hide'}
+```{r candidate_models, echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE, results='hide'}
 #Variables with information to be used as arguments
 occ_all <- "pemp_all.csv"
 occ_tra <- "pemp_tra.csv"
@@ -71,7 +75,7 @@ ku.enm.cal(occ.all = occ_all, occ.tra = occ_tra, M.var.dir = M_var_dir, batch = 
 
 A process of evaluation was performed for selecting candidate models and their associated parameters. Models were selected based on three distinct criteria: statistical significance (based on partial ROC), prediction ability (omission rates), and model's complexity (AICc). 
 
-```{r evaluation_selection, echo=TRUE, cache=TRUE, message=FALSE, warning=FALSE, results='hide'}
+```{r evaluation_selection, echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE, results='hide'}
 #Variables with information to be used as arguments
 occ_test <- "pemp_test.csv"
 out_eval <- "emp_enm_evaluation_results"
@@ -91,7 +95,7 @@ ku.enm.eval(path = cal_dir, occ.all = occ_all, occ.tra = occ_tra, occ.test = occ
 
 Final model was created usign the parameters of the best candidate model chosen, this model was projected to the complete Cuban archipelago. This model was created inside the calibration area, performing five replicates by Bootstrap, and using the model parameters selected, and the complete sets of occurrences. These models will be transfered to future scenarios (i.e., RCP 4.5 and 8.5) using five General Circulation Models REF.
 
-```{r preliminar_models, echo=TRUE, cache=TRUE, message=FALSE, warning=FALSE, results='hide'}
+```{r preliminar_models, echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE, results='hide'}
 #Variables with information to be used as arguments
 mod_dir <- "Final_Models"
 G_var_dir <- "G"
@@ -106,9 +110,32 @@ ku.enm.mod(occ.all = occ_all, M.var.dir = M_var_dir, out.eval = out_eval, rep.n 
           out.dir = mod_dir, out.format = ofor, project = pr, G.var.dir = G_var_dir, ext.type = extyp)
 ```
 
-#### Final model creation
+#### Species conservation status re-evaluation
 
-Final
+The species conservation status will be re-evaluated considering the criteria from the International Union for Conservation of Nature (IUCN). Only area of occupancy considering results obtained from current and future potential distribution models, and potential losses of occupancy areas based on projections. 
 
 ### Preliminary results
+
+```{r results1, echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE, results='hide'}
+resb <- read.csv(paste(out_eval, "best_models_OR_AICc.csv", sep = "/"))
+resc <- read.csv(paste(out_eval, "evaluation_results.csv", sep = "/"))
+```
+
+
+![Figure 1. Distribution of all, non-statistically significant, and selected models according to their omission rates and AICc values.](emp_evaluation_results/evaluation_figure.png){width=60%}
+
+```{r results2, echo=FALSE, message=FALSE, warning=FALSE, fig.height=3.74, fig.width=6, fig.align="center", fig.cap="Preliminar geographic representation of the ecological niche model and ocurrences for the studied species.", cache=TRUE}
+par(mfcol = c(1, 2), mar = c(4,4,0.8,0.8))
+map(na_usa,  xlim = c(-130,-67), ylim = c(25,55), fill = TRUE, col = "gray90", border = "grey35", mar = rep(0,4))
+map.scale(x = -128, ratio = FALSE, relwidth = 0.1, cex = 0.6)
+box()
+points(sta$lon, sta$lat, col = "blue", cex = 0.3)
+points(stap$lon, stap$lat, col = "black", cex = 0.3)
+
+plot(temp$data ~ temp$year, cex = 0.2, col = "grey25", xlab = "Years", ylab = "Mean temperature (°F)")
+abline(glm(temp$data ~ temp$year), col = "red", lwd = 3)
+
+plot(prec$data ~ prec$year, cex = 0.2, col = "grey25", xlab = "Years", ylab = "Anual precipitation (cm)")
+abline(glm(temp$data ~ temp$year), col = "red", lwd = 3)
+```
 

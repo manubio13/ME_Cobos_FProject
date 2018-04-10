@@ -168,7 +168,7 @@ sdirs <- paste(rep(dirn, 3), ext_op, sep = "_")
 
 fm_dir <- list.files(path = mod_dir)
 
-if (sum(sdirs == fm_dir) == length(sdirs)){
+if (sum(sdirs %in% fm_dir) == length(sdirs)){
   cat("\npassed")
 } else{
   cat("\nfailed")
