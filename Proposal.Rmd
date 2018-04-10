@@ -22,7 +22,7 @@ checkpoint("2018-04-05", checkpointLocation = tempdir())
 
 ```{r packages_functions, echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE, results='hide'}
 #Packages
-packages <- c("rmarkdown", "sqldf", "knitr", "ENMeval", "yaml")
+packages <- c("rmarkdown", "sqldf", "knitr", "ENMeval", "yaml", "tinytex", "knitr", "maptools", "maps")
 toInstall <- packages[!packages %in% installed.packages()]
 if(length(toInstall)>0L) install.packages(toInstall)
 lapply(packages, require, character.only = TRUE)
@@ -33,15 +33,15 @@ source("https://raw.githubusercontent.com/manubio13/ME_Cobos_FProject/master/eva
 source("https://raw.githubusercontent.com/manubio13/ME_Cobos_FProject/master/mod_function.R")
 ```
 
-### Introduction
+## Introduction
 
-Amphibians are among the most threatened species of vertebrates REF and their conservation status has continue declining during the last decades REF. One of the main concerns for future conservation of these species is Climate Change REF. This threat may cause direct or indirect effects, affecting these species phenology, phisiology, and distribution patterns, among others. Insular amphibians are specially vulnerable to climate change-related threats because of the particular topographic and climatic caracteristics of archipelagos. 
+Amphibians are among the most threatened species of vertebrates and their conservation status has continue declining during the last decades @blaustein_direct_2010. One of the main concerns for future conservation of these species is Climate Change @li_review_2013. This threat may cause direct or indirect effects, affecting these species phenology, phisiology, and distribution patterns, among others. Insular amphibians are specially vulnerable to climate change-related threats because of the particular topographic and climatic caracteristics of archipelagos @bellard_vulnerability_2014. 
 
-*Peltophryne empusa* is one the eight endemic Cuban toads, its current conservatio status is Vulnerable owing to its reduced and fragmented area of occupancy REF. Previous studies have revealed that Cuban amphibians my be under risk beacuse of future changes in climate REF. The main potential effect of this phenomenom on these toads that has been predicted is a reduction in their distributional area. Previous evaluations of this species conservation status have not considered potential threats from climate change on it REF; hence a new evaluation that considers this potential changes to the future is necessary.
+*Peltophryne empusa* is one the eight endemic Cuban toads, its current conservatio status is Vulnerable owing to its reduced and fragmented area of occupancy @iucn_peltophryne_2004-6. Previous studies have revealed that Cuban amphibians my be under risk beacuse of future changes in climate @cobos_recent_2016. The main potential effect of this phenomenom on these toads that has been predicted is a reduction in their distributional area. Previous evaluations of this species conservation status have not considered potential threats from climate change on it @iucn_peltophryne_2004-6; hence a new evaluation that considers this potential changes to the future is necessary.
 
 The aim of this project is to contrast current results of conservation status assessments of these species with one that considers potential effects of climate change on this tad distribution. 
 
-### Methods
+## Methods
 
 #### Study site
 
@@ -49,9 +49,9 @@ The study area is the entire Cuban archipelago. This insular country is part of 
 
 #### Species and environmental data
 
-A total of 246 species occurrences were obtained from multiple databases and field expeditions. A spatial thining process was performed to reducing autocorrelation and a total of 64 records remained. These records were split by randomly selecting 25% of them for testing and the remaining for training models.
+A total of 246 species occurrences were obtained from multiple databases (GBIF, VerNet, etc.) and field expeditions. A spatial thining process was performed to reducing autocorrelation and a total of 64 records remained. These records were split by randomly selecting 25% of them for testing and the remaining for training models.
 
-Bioclimatic variables from the WorldClim database REF were used as environmental predictors. A process of jackknife was performed in Maxent to select three candidate sets of variables that contribute the most to the model and that were not more than 80% correlated with each other.
+Bioclimatic variables from the WorldClim database @hijmans_very_2005 were used as environmental predictors. A process of jackknife was performed in Maxent to select three candidate sets of variables that contribute the most to the model and that were not more than 80% correlated with each other.
 
 #### Ecological niche model's calibration
 
@@ -67,11 +67,12 @@ cal_dir <- "Calibration_Models"
 reg_mul <- c(seq(0.5,1,0.1),seq(2,5,1))
 fea_cs <- "basic"
 running <- TRUE
+```
 
+```{r candidate_models1, echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE, results='hide', eval=FALSE}
 ku.enm.cal(occ.all = occ_all, occ.tra = occ_tra, M.var.dir = M_var_dir, batch = batch_cal,
            out.dir = cal_dir, reg.mult = reg_mul, f.clas = fea_cs, run = running)
 ```
-
 
 A process of evaluation was performed for selecting candidate models and their associated parameters. Models were selected based on three distinct criteria: statistical significance (based on partial ROC), prediction ability (omission rates), and model's complexity (AICc). 
 
@@ -85,15 +86,16 @@ ni <- 100
 kt <- TRUE
 selc <- "OR_AICc"
 ##Some of the variables used here as arguments were already created for the previous function
+```
 
+```{r evaluation_selection1, echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE, results='hide', eval=FALSE}
 ku.enm.eval(path = cal_dir, occ.all = occ_all, occ.tra = occ_tra, occ.test = occ_test, batch = batch_cal,
             out.eval = out_eval, omi.val = ov, rand.perc = rp, no.inter = ni, kept = kt, selection = selc)
 ```
 
-
 #### Final model creation
 
-Final model was created usign the parameters of the best candidate model chosen, this model was projected to the complete Cuban archipelago. This model was created inside the calibration area, performing five replicates by Bootstrap, and using the model parameters selected, and the complete sets of occurrences. These models will be transfered to future scenarios (i.e., RCP 4.5 and 8.5) using five General Circulation Models REF.
+Final model was created usign the parameters of the best candidate model chosen, this model was projected to the complete Cuban archipelago. This model was created inside the calibration area, performing five replicates by Bootstrap, and using the model parameters selected, and the complete sets of occurrences. These models will be transfered to future scenarios (i.e., RCP 4.5 and 8.5) using five General Circulation Models @stocker_climate_2013.
 
 ```{r preliminar_models, echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE, results='hide'}
 #Variables with information to be used as arguments
@@ -105,7 +107,9 @@ ofor <- "logistic"
 pr <- TRUE
 extyp <- "all"
 ##Most of the variables used here as arguments were already created for the previous function
+```
 
+```{r preliminar_models1, echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE, results='hide', eval=FALSE}
 ku.enm.mod(occ.all = occ_all, M.var.dir = M_var_dir, out.eval = out_eval, rep.n = rep, rep.type = rtyp, 
           out.dir = mod_dir, out.format = ofor, project = pr, G.var.dir = G_var_dir, ext.type = extyp)
 ```
@@ -114,28 +118,32 @@ ku.enm.mod(occ.all = occ_all, M.var.dir = M_var_dir, out.eval = out_eval, rep.n 
 
 The species conservation status will be re-evaluated considering the criteria from the International Union for Conservation of Nature (IUCN). Only area of occupancy considering results obtained from current and future potential distribution models, and potential losses of occupancy areas based on projections. 
 
-### Preliminary results
+## Preliminary and expected results
 
 ```{r results1, echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE, results='hide'}
+ress <- read.csv(paste(out_eval, "evaluation_stats.csv", sep = "/"))
 resb <- read.csv(paste(out_eval, "best_models_OR_AICc.csv", sep = "/"))
 resc <- read.csv(paste(out_eval, "evaluation_results.csv", sep = "/"))
 ```
 
+A total of `r ress[1,1]` of `r length(resc[,1])` candidate models were significant. Since none of the candidate models resulted in omission rates lower than 5%, `r length(resb[,1])` best parameters were chosen by their AICc values (delta AICc < 2).
 
-![Figure 1. Distribution of all, non-statistically significant, and selected models according to their omission rates and AICc values.](emp_evaluation_results/evaluation_figure.png){width=60%}
-
-```{r results2, echo=FALSE, message=FALSE, warning=FALSE, fig.height=3.74, fig.width=6, fig.align="center", fig.cap="Preliminar geographic representation of the ecological niche model and ocurrences for the studied species.", cache=TRUE}
-par(mfcol = c(1, 2), mar = c(4,4,0.8,0.8))
-map(na_usa,  xlim = c(-130,-67), ylim = c(25,55), fill = TRUE, col = "gray90", border = "grey35", mar = rep(0,4))
-map.scale(x = -128, ratio = FALSE, relwidth = 0.1, cex = 0.6)
-box()
-points(sta$lon, sta$lat, col = "blue", cex = 0.3)
-points(stap$lon, stap$lat, col = "black", cex = 0.3)
-
-plot(temp$data ~ temp$year, cex = 0.2, col = "grey25", xlab = "Years", ylab = "Mean temperature (°F)")
-abline(glm(temp$data ~ temp$year), col = "red", lwd = 3)
-
-plot(prec$data ~ prec$year, cex = 0.2, col = "grey25", xlab = "Years", ylab = "Anual precipitation (cm)")
-abline(glm(temp$data ~ temp$year), col = "red", lwd = 3)
+```{r results2, echo=FALSE, message=FALSE, warning=FALSE, fig.height=4, fig.width=4, fig.align="center", fig.cap="Distribution of all, non-statistically significant, and selected models according to their omission rates and AICc values.", cache=TRUE}
+include_graphics(paste(out_eval, "evaluation_figure", sep = "/"))
 ```
 
+
+Species distribution probabilities were higher in lowlands. Almost none of the highlands in the archipelago presented suitable conditions for the species. Considering these results and the general trend in climate for this region to the future (higher temperature and lower precipitation), environmental suitability may increase towards the mountains. However, wheter the environments in lowlands will be more or less suitable in the future is uncertain. This is why future model projections are one the main results to get in future analyses. Comparisons of current and future bolean models derived from logistic outputs of Maxent are other results that will allow estimating the area
+
+```{r results3, echo=FALSE, message=FALSE, warning=FALSE, fig.height=4, fig.width=6, fig.align="center", fig.cap="Preliminar geographic representation of the ecological niche model and ocurrences for the studied species.", cache=TRUE}
+#data
+mod <- raster("Final_Models/M_0.9_F_lq_Set2_NE/Peltophryne_empusa_Cuba_median.asc")
+occ <- read.csv("pemp_all.csv")
+
+#ploting
+colfunc<-colorRampPalette(c("red","yellow","royalblue","navyblue"))
+plot(mod, col = colfunc(100))
+points(occ$Longitud, occ$Latitud, col = "black", cex = 0.7, pch = 16)
+```
+
+## References
