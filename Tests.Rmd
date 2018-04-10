@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Loading packages and functions
 
-```{r packages_functions, echo=T, cache=TRUE}
+```{r packages_functions, echo=TRUE, cache=TRUE, include=TRUE}
 #Packages
 packages <- c("rmarkdown", "sqldf", "knitr", "ENMeval", "yaml")
 toInstall <- packages[!packages %in% installed.packages()]
@@ -25,11 +25,11 @@ source("https://raw.githubusercontent.com/manubio13/ME_Cobos_FProject/master/mod
 ```
 
 
-## Tests for ku.enm.cal
+## Tests for cal_function
 
 Test if it can create a batch file for running maxent models
 
-```{r cal_test_1, echo=T}
+```{r cal_test_1, echo=TRUE, cache=TRUE, include=TRUE}
 #Variables with information to be used as arguments
 occ_all <- "pemp_all.csv"
 occ_tra <- "pemp_tra.csv"
@@ -38,13 +38,13 @@ batch_cal <- "emp_enm_calibration_models1"
 cal_dir <- "Calibration_Models1"
 reg_mul <- c(seq(0.5,1,0.1),seq(2,5,1))
 fea_cs <- "basic"
-running <- FALSE
+running <- TRUE
 
 #Executing the function
 ku.enm.cal(occ.all = occ_all, occ.tra = occ_tra, M.var.dir = M_var_dir, batch = batch_cal,
            out.dir = cal_dir, reg.mult = reg_mul, f.clas = fea_cs, run = running)
 
-if (file.exists("emp_enm_calibration_models1.bat")) {
+if (file.exists(paste(batch_cal, "bat", sep = "."))) {
   cat("\npassed")
 } else {
   cat("\nfailed")
@@ -53,29 +53,47 @@ if (file.exists("emp_enm_calibration_models1.bat")) {
 
 Test if batch length is appropriate acording to feature classes selection
 
-```{r cal_test_2, echo=T, cache=TRUE}
+```{r cal_test_2, echo=TRUE, cache=TRUE, include=TRUE}
 #Number of models expected to result with the defined varaibles
-if(fea_cs == "all" | fea_cs == "basic" | fea_cs == "no.t.h" |)
-n <- prod(length(reg_mul), length(dir("M")), 2) #number of potential combinations times two (two models for each combination are being created)
-bf <- readLines("emp_enm_calibration_models1.bat") 
+if(fea_cs == "all" | fea_cs == "basic" | fea_cs == "no.t.h" | fea_cs == "no.t.h" | fea_cs == "no.t.h"){
+  if(fea_cs == "all"){
+    n <- prod(length(reg_mul), length(dir("M")), 29, 2) #number of potential combinations times two (two models for each combination are being created)
+  }
+  if(fea_cs == "basic"){
+    n <- prod(length(reg_mul), length(dir("M")), 5, 2) #number of potential combinations times two (two models for each combination are being created)
+  }
+  if(fea_cs == "no.t.h"){
+    n <- prod(length(reg_mul), length(dir("M")), 7, 2) #number of potential combinations times two (two models for each combination are being created)
+  }
+  if(fea_cs == "no.t"){
+    n <- prod(length(reg_mul), length(dir("M")), 15, 2) #number of potential combinations times two (two models for each combination are being created)
+  }
+  if(fea_cs == "no.h"){
+    n <- prod(length(reg_mul), length(dir("M")), 15, 2) #number of potential combinations times two (two models for each combination are being created)
+  }
+}else{
+  n <- length(fea_cs)
+}
+
+bf <- readLines(paste(batch_cal, "bat", sep = ".")) 
 nr <- length(bf)
 
 if (nr == n) {
-  print("passed")
+  cat("\npassed")
 } else {
-  print("failed")
+  cat("\nfailed")
 }
 ```
 
 
-# Tests for ku.enm.eval
+# Tests for eval_function
 
 Test if it creates the folder for the evaluation results
 
-```{r ku.enm.eval_test_1, echo=T, cache=TRUE}
+```{r eval_test_1, echo=TRUE, cache=TRUE, include=TRUE}
 #Variables with information to be used as arguments
 occ_test <- "pemp_test.csv"
-out_eval <- "emp_enm_evaluation_results"
+out_eval <- "emp_enm_evaluation_results1"
 ov <- 5
 rp <- 50
 ni <- 100
@@ -89,41 +107,37 @@ ku.enm.eval(path = cal_dir, occ.all = occ_all, occ.tra = occ_tra, occ.test = occ
 
 dr <- dir()
 
-if (out_eval %in% dr)
-{
-  print("passed")
-} else
-{
-  print("failed")
+if (out_eval %in% dr){
+  cat("\npassed")
+} else{
+  cat("\nfailed")
 }
 ```
 
 Test if all evaluation files were created
 
-```{r ku.enm.eval_test_2, echo=T, cache=TRUE}
+```{r eval_test_2, echo=TRUE, cache=TRUE, include=TRUE}
 #Files that should exist
 files <- c ("best_models_OR_AICc.csv", "evaluation_figure.png", "evaluation_results.csv", "evaluation_results.html", "evaluation_stats.csv")
 
 ev_files <- list.files(path = out_eval)
 
-if (files %in% ev_files)
-{
-  print("passed")
-} else
-{
-  print("failed")
+if (sum(files == ev_files) == 5){
+  cat("\npassed")
+} else{
+  cat("\nfailed")
 }
 ```
 
 
-# Tests for ku.enm.mod
+# Tests for mod_function
 
 Test if folder for final models was created 
 
-```{r ku.enm.mod_test_1, echo=T, cache=TRUE}
+```{r mod_test_1, echo=TRUE, cache=TRUE, include=TRUE}
 #Variables with information to be used as arguments
-mod_dir <- "Final_Models"
-G_var_dir <- "G_variables"
+mod_dir <- "Final_Models1"
+G_var_dir <- "G"
 rep <- 5
 rtyp <- "Bootstrap"
 ofor <- "logistic"
@@ -137,31 +151,27 @@ ku.enm.mod(occ.all = occ_all, M.var.dir = M_var_dir, out.eval = out_eval, rep.n 
 
 dr1 <- dir()
 
-if (G_var_dir %in% dr1)
-{
-  print("passed")
-} else
-{
-  print("failed")
+if (G_var_dir %in% dr1) {
+  cat("\npassed")
+} else{
+  cat("\nfailed")
 }
 ```
 
-Test if all subdirectories were created for final models in the G_var_dir folder
+Test if all subdirectories were created for final models in the Final models folder
 
-```{r ku.enm.cal_test_2, echo=T, cache=TRUE}
+```{r mod_test_2, echo=TRUE, cache=TRUE, include=TRUE}
 #Subdirectories that should exist
 dirn <- read.csv(paste(out_eval, "best_models_OR_AICc.csv", sep = "/"))[,1]
 ext_op <- c("E", "EC", "NE")
 sdirs <- paste(rep(dirn, 3), ext_op, sep = "_")
 
-fm_dir <- list.filesdir(path = G_var_dir)
+fm_dir <- list.files(path = mod_dir)
 
-if (sdirs == fm_dir)
-{
-  print("passed")
-} else
-{
-  print("failed")
+if (sum(sdirs == fm_dir) == length(sdirs)){
+  cat("\npassed")
+} else{
+  cat("\nfailed")
 }
 ```
 
