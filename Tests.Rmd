@@ -55,21 +55,23 @@ Test if batch length is appropriate acording to feature classes selection
 
 ```{r cal_test_2, echo=TRUE, cache=TRUE, include=TRUE}
 #Number of models expected to result with the defined varaibles
-if(fea_cs == "all" | fea_cs == "basic" | fea_cs == "no.t.h" | fea_cs == "no.t.h" | fea_cs == "no.t.h"){
+if(fea_cs == "all" | fea_cs == "basic" | fea_cs == "no.t.h" | 
+   fea_cs == "no.t.h" | fea_cs == "no.t.h"){
   if(fea_cs == "all"){
-    n <- prod(length(reg_mul), length(dir("M")), 29, 2) #number of potential combinations times two (two models for each combination are being created)
+    n <- prod(length(reg_mul), length(dir("M")), 29, 2) #number of potential 
+    #combinations times two (two models for each combination are being created)
   }
   if(fea_cs == "basic"){
-    n <- prod(length(reg_mul), length(dir("M")), 5, 2) #number of potential combinations times two (two models for each combination are being created)
+    n <- prod(length(reg_mul), length(dir("M")), 5, 2) 
   }
   if(fea_cs == "no.t.h"){
-    n <- prod(length(reg_mul), length(dir("M")), 7, 2) #number of potential combinations times two (two models for each combination are being created)
+    n <- prod(length(reg_mul), length(dir("M")), 7, 2) 
   }
   if(fea_cs == "no.t"){
-    n <- prod(length(reg_mul), length(dir("M")), 15, 2) #number of potential combinations times two (two models for each combination are being created)
+    n <- prod(length(reg_mul), length(dir("M")), 15, 2) 
   }
   if(fea_cs == "no.h"){
-    n <- prod(length(reg_mul), length(dir("M")), 15, 2) #number of potential combinations times two (two models for each combination are being created)
+    n <- prod(length(reg_mul), length(dir("M")), 15, 2) 
   }
 }else{
   n <- length(fea_cs)
@@ -99,12 +101,17 @@ rp <- 50
 ni <- 100
 kt <- TRUE
 selc <- "OR_AICc"
-##Most of the variables used here as arguments were already created for the previous function
+##Most of the variables used here as arguments were already created 
+```
 
+```{r eval_test_1a, echo=TRUE, cache=TRUE, include=TRUE, eval=FALSE}
 #Executing the function
-ku.enm.eval(path = cal_dir, occ.all = occ_all, occ.tra = occ_tra, occ.test = occ_test, batch = batch_cal,
-            out.eval = out_eval, omi.val = ov, rand.perc = rp, no.inter = ni, kept = kt, selection = selc)
+ku.enm.eval(path = cal_dir, occ.all = occ_all, occ.tra = occ_tra, occ.test = occ_test, 
+            batch = batch_cal, out.eval = out_eval, omi.val = ov, rand.perc = rp, 
+            no.inter = ni, kept = kt, selection = selc)
+```
 
+```{r eval_test_1b, echo=TRUE, cache=TRUE, include=TRUE}
 dr <- dir()
 
 if (out_eval %in% dr){
@@ -118,7 +125,8 @@ Test if all evaluation files were created
 
 ```{r eval_test_2, echo=TRUE, cache=TRUE, include=TRUE}
 #Files that should exist
-files <- c ("best_models_OR_AICc.csv", "evaluation_figure.png", "evaluation_results.csv", "evaluation_results.html", "evaluation_stats.csv")
+files <- c ("best_models_OR_AICc.csv", "evaluation_figure.png", "evaluation_results.csv", 
+            "evaluation_results.html", "evaluation_stats.csv")
 
 ev_files <- list.files(path = out_eval)
 
@@ -143,11 +151,12 @@ rtyp <- "Bootstrap"
 ofor <- "logistic"
 pr <- TRUE
 extyp <- "all"
-##Most of the variables used here as arguments were already created for the previous function
+##Most of the variables used here as arguments were already created 
 
 #Executing the function
-ku.enm.mod(occ.all = occ_all, M.var.dir = M_var_dir, out.eval = out_eval, rep.n = rep, rep.type = rtyp, 
-          out.dir = mod_dir, out.format = ofor, project = pr, G.var.dir = G_var_dir, ext.type = extyp)
+ku.enm.mod(occ.all = occ_all, M.var.dir = M_var_dir, out.eval = out_eval, 
+           rep.n = rep, rep.type = rtyp, out.dir = mod_dir, out.format = ofor, 
+           project = pr, G.var.dir = G_var_dir, ext.type = extyp)
 
 dr1 <- dir()
 
