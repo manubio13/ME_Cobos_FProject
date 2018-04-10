@@ -3,21 +3,57 @@ title: "Proposal"
 author: "Marlon E. Cobos"
 date: "April 9, 2018"
 output: pdf_document
+csl: Science.csl
+bibliography: My lib.bib
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r checkpoint, echo=FALSE, cache=TRUE, warning=FALSE, message=FALSE}
+if(!require(checkpoint)){ #if require install this package
+  install.packages("checkpoint")
+  library(checkpoint)
+}
+dir.create(file.path(tempdir(), ".checkpoint"), recursive = TRUE, showWarnings = FALSE)
+checkpoint("2018-04-05", checkpointLocation = tempdir())
+```
+
+```{r packages_functions, echo=T, cache=TRUE, message=FALSE, warning=FALSE, results='hide'}
+#Packages
+packages <- c("rmarkdown", "sqldf", "knitr", "ENMeval", "yaml")
+toInstall <- packages[!packages %in% installed.packages()]
+if(length(toInstall)>0L) install.packages(toInstall)
+lapply(packages, require, character.only = TRUE)
+
+#Functions
+source("https://raw.githubusercontent.com/manubio13/ME_Cobos_FProject/master/cal_function.R")
+source("https://raw.githubusercontent.com/manubio13/ME_Cobos_FProject/master/eval_function.R")
+source("https://raw.githubusercontent.com/manubio13/ME_Cobos_FProject/master/mod_function.R")
+```
+
 ### Introduction
 
+Amphibians are among the most threatened species of vertebrates REF and their conservation status has continue declining during the last decades REF. One of the main concerns for future conservation of these species is Climate Change REF. This threat may cause direct or indirect effects, affecting these species phenology, phisiology, and distribution patterns, among others. Insular amphibians are specially vulnerable to climate change-related threats because of the particular topographic and climatic caracteristics of archipelagos. 
 
+*Peltophryne empusa* is one the eight endemic Cuban toads, its current conservatio status is Vulnerable owing to its reduced and fragmented area of occupancy REF. Previous studies have revealed that Cuban amphibians my be under risk beacuse of future changes in climate REF. The main potential effect of this phenomenom on these toads that has been predicted is a reduction in their distributional area. Previous evaluations of this species conservation status have not considered potential threats from climate change on it REF; hence a new evaluation that considers this potential changes to the future is necessary.
 
-### Calibration models
+The aim of this project is to contrast current results of conservation status assessments of these species with one that considers potential effects of climate change on this tad distribution. 
 
-Calibration models are a large set of candidate models created to respond to the need to test multiple parameter combinations, for example, distinct regularization multiplier values, various feature classes, and different sets of environmental variables. 
+### Methods
 
-```{r}
+#### Species and environmental data
+
+A total of 246 species occurrences were obtained from multiple databases and field expeditions. A spatial thining process was performed to reducing autocorrelation and a total of 64 records remained. These records were split by randomly selecting 25% of them for testing and the remaining for training models.
+
+Bioclimatic variables from the WorldClim database REF were used as environmental predictors. A process of jackknife was performed in Maxent to select three candidate sets of variables that contribute the most to the model and that were not more than 80% correlated with each other.
+
+#### Ecological niche model's calibration
+
+A total of 150 candidate models were evaluated as part of the model calibration process. These models were created in Maxent with distinct parameters resulted from combining three sets of environmental predictors, 10 regularization multipliers, and 5 feature classes.
+
+```{r candidate_models, echo=TRUE, cache=TRUE, message=FALSE, warning=FALSE, results='hide'}
 #Variables with information to be used as arguments
 occ_all <- "pemp_all.csv"
 occ_tra <- "pemp_tra.csv"
@@ -26,18 +62,16 @@ batch_cal <- "emp_enm_calibration_models"
 cal_dir <- "Calibration_Models"
 reg_mul <- c(seq(0.5,1,0.1),seq(2,5,1))
 fea_cs <- "basic"
-running <- FALSE
+running <- TRUE
 
 ku.enm.cal(occ.all = occ_all, occ.tra = occ_tra, M.var.dir = M_var_dir, batch = batch_cal,
            out.dir = cal_dir, reg.mult = reg_mul, f.clas = fea_cs, run = running)
 ```
 
 
-### Evaluation and selection of best models
+A process of evaluation was performed for selecting candidate models and their associated parameters. Models were selected based on three distinct criteria: statistical significance (based on partial ROC), prediction ability (omission rates), and model's complexity (AICc). 
 
-Evaluation is an important step in model calibration. This step centers on selecting candidate models and their associated parameters to identify the very best models for the purposes of the study. The ku.enm.eval function evaluates candidate models based on three distinct criteria: statistical significance (based on partial ROC), prediction ability (we use omission rates, but other metrics, such as overall correct classification rate, can also be used), and complexity (here evaluated using AICc). 
-
-```{r}
+```{r evaluation_selection, echo=TRUE, cache=TRUE, message=FALSE, warning=FALSE, results='hide'}
 #Variables with information to be used as arguments
 occ_test <- "pemp_test.csv"
 out_eval <- "emp_enm_evaluation_results"
@@ -53,21 +87,28 @@ ku.enm.eval(path = cal_dir, occ.all = occ_all, occ.tra = occ_tra, occ.test = occ
 ```
 
 
-### Final models creation
+#### Final model creation
 
-After selecting parametrizations that produce the best models, the next step is to create the final models, and if needed transfer them to other environmental data sets (e.g., to other periods or geographic regions).
+Final model was created usign the parameters of the best candidate model chosen, this model was projected to the complete Cuban archipelago. This model was created inside the calibration area, performing five replicates by Bootstrap, and using the model parameters selected, and the complete sets of occurrences. These models will be transfered to future scenarios (i.e., RCP 4.5 and 8.5) using five General Circulation Models REF.
 
-```{r}
+```{r preliminar_models, echo=TRUE, cache=TRUE, message=FALSE, warning=FALSE, results='hide'}
 #Variables with information to be used as arguments
 mod_dir <- "Final_Models"
 G_var_dir <- "G"
+rep <- 5
+rtyp <- "Bootstrap"
+ofor <- "logistic"
+pr <- TRUE
+extyp <- "all"
 ##Most of the variables used here as arguments were already created for the previous function
+
+ku.enm.mod(occ.all = occ_all, M.var.dir = M_var_dir, out.eval = out_eval, rep.n = rep, rep.type = rtyp, 
+          out.dir = mod_dir, out.format = ofor, project = pr, G.var.dir = G_var_dir, ext.type = extyp)
 ```
 
-The *ku.enm.mod* function has the following syntax:
+#### Final model creation
 
-```{r}
-ku.enm.mod(occ.all = occ_all, M.var.dir = M_var_dir, out.eval = out_eval, rep.n = 10, rep.type = "Bootstrap", 
-out.dir = mod_dir, out.format = "logistic", project = TRUE, G.var.dir = G_var_dir, 
-ext.type = "all", write.mess = FALSE, write.clamp = FALSE)
-```
+Final
+
+### Preliminary results
+
