@@ -10,8 +10,8 @@
 #- occ.all (character) is the name of the csv file with the calibration occurrences, columns must be: species, longitud, latitud
 #- occ.tra (character) is the name of the csv file with the calibration occurrences, columns must be: species, longitud, latitud
 #- occ.test (character) is the name of the csv file with the evaluation occurrences, columns must be: species, longitud, latitud
-#- batch (character) the name of the .bat file created with the KU.ENM.cal function
-#- out.eval (ccaracter) name of the folder in wich the results of the evaluation will be written
+#- batch (character) the name of the .bat file created with the ku.enm.cal function
+#- out.eval (character) name of the folder in wich the results of the evaluation will be written
 #- omi.val (numeric) is the % of omission error allowed (5%)
 #- rand.perc (numeric) is the percentage of data to be used for the bootstraping process, default (50%) 
 #- no.inter (numeric) is the number of times that the bootstrap is going to be recalculated, default (100)
