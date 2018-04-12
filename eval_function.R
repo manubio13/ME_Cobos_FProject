@@ -118,7 +118,7 @@ ku.enm.eval <- function(path, occ.all, occ.tra, occ.test, batch, out.eval, omi.v
   aiccs <- list() #empty list of AICc results
   proc_res_med <- list() #empty list of mean AUC values
   proc_res_lt1 <- vector() #empty vector of significance values of the AUCs
-  om_rates <- vector() #empty vector of ommision rates 
+  om_rates <- vector() #empty vector of omision rates 
   
   pb <- winProgressBar(title = "Progress bar", min = 0, max = length(dir_names), width = 300) #progress bar
   
@@ -147,15 +147,24 @@ ku.enm.eval <- function(path, occ.all, occ.tra, occ.test, batch, out.eval, omi.v
     })
     mods1 <- list.files(dir_names1[i], pattern = "asc", full.names = TRUE) #list of the ascii models
     mod1 <- raster(mods1) #reading each ascii model created with the calibration occurrences
-    proc_res <- ku.enm.proc(presencefile = occ.test, predictionfile = mod1,
-                            omissionval = omissionval, randompercent = rand.perc, 
-                            noofiteration = no.inter) #Partial ROC analyses for each model
-    proc_res <- as.data.frame(do.call(rbind, proc_res)) #converting each list of AUC ratios interations in a table for each model
-    proc_res_med[[i]] <- apply(proc_res, 2, mean) #mean of AUC ratios interations for each model
-    proc_res_lt1[i] <- sum(proc_res[,4] <= 1)/length(proc_res[,4]) #proportion of AUC ratios <= 1 for each model  
     
-    #Omission rates calculation
-    om_rates[i] <- ku.enm.omrat(model = mod1, threshold = omi.val, occ.tra = occ, occ.test = occ1)
+    if(min(na.omit(getValues(mod1))) == max(na.omit(getValues(mod1)))){
+      warning("\nMaxent model produced an output with an only probability value, pROC and 
+              omission rate will return a value of 2 for recognition of these cases.\n")
+      proc_res_med[[i]] <- data.frame(2, 2, 2, 2) #mean of AUC ratios interations for each model
+      proc_res_lt1[i] <- 2
+      om_rates[i] <- 2  
+    }else{
+      proc_res <- ku.enm.proc(presencefile = occ.test, predictionfile = mod1,
+                              omissionval = omissionval, randompercent = rand.perc, 
+                              noofiteration = no.inter) #Partial ROC analyses for each model
+      proc_res <- as.data.frame(do.call(rbind, proc_res)) #converting each list of AUC ratios interations in a table for each model
+      proc_res_med[[i]] <- apply(proc_res, 2, mean) #mean of AUC ratios interations for each model
+      proc_res_lt1[i] <- sum(proc_res[,4] <= 1)/length(proc_res[,4]) #proportion of AUC ratios <= 1 for each model  
+      
+      #Omission rates calculation
+      om_rates[i] <- ku.enm.omrat(model = mod1, threshold = omi.val, occ.tra = occ, occ.test = occ1)
+    }
     
     #Erasing calibration models after evaluating them if kept = FALSE
     if(kept == FALSE){
@@ -196,7 +205,7 @@ ku.enm.eval <- function(path, occ.all, occ.tra, occ.test, batch, out.eval, omi.v
   ku_enm_eval <- data.frame(ku_enm_eval[,1], as.numeric(levels(ku_enm_eval[,2]))[ku_enm_eval[,2]], ku_enm_eval[,3], 
                             ku_enm_eval[,4], ku_enm_eval[,5], ku_enm_eval[,6], ku_enm_eval[,7], ku_enm_eval[,8])
   colnames(ku_enm_eval) <- c("Model", "Mean_AUC_ratio", "Partial_ROC",#changing column names in the final table
-                             paste("Ommission_rate_at_", omi.val, "%", sep = ""), "AICc",
+                             paste("Omission_rate_at_", omi.val, "%", sep = ""), "AICc",
                              "delta_AICc", "W_AICc", "num_parameters")
   
   
@@ -218,7 +227,7 @@ ku.enm.eval <- function(path, occ.all, occ.tra, occ.test, batch, out.eval, omi.v
           ku_enm_best <- ku_enm_best[order(ku_enm_best[,6]),]
         }
       }else{
-        mesKU <- "\nNone of your models meets the omission rates criterion,\n
+        mesKU <- "\nNone of your models meets the omission rate criterion,\n
         models with the smallest omission rates will be presented\n"
         ku_enm_best <- ku_enm_bes[order(ku_enm_bes[,4]),][1:100,]
         for (i in 1:length(ku_enm_best[,1])) {
