@@ -7,6 +7,12 @@ csl: Science.csl
 bibliography: My lib.bib
 ---
 
+<!--***DAN: Search for ***DAN in all files for my comments. All files may have them.-->
+
+<!--***DAN: The proposal. It's crammed with typos and the like. Errors go beyond English-as-a-second-language stuff, seems the write-up was rushed. Understandable given the magnitude of the programming suite, but also makes it hard to evaluate the proposal at times. I am no expert in this area, but I wondered how you can possibly select between 150 models when you only have 64 observations. Typically, unless the AIC weight for the best model is greater than 95% or so, using the best model only is not a preferred statistical solution, and instead model averaging is preferred for predictions and other applications of models. See Burnham & Anderson's book or ask me if this is unclear what I meann. All these quibbles aside, this is an ambitious project which is clearly far more than sufficient for a good final project. Please go ahead with it, but recognize that time is limited, so I encourage you to have some ideas as to what smaller products you could stop at on the way to this goal in the event there is not enough tme to get all this work done. -->
+
+<!--***DAN: Well done, 10/10.-->
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```

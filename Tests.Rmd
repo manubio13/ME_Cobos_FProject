@@ -5,6 +5,14 @@ date: "March 31, 2018"
 output: pdf_document
 ---
 
+<!--***DAN: Search for ***DAN in all files for my comments. All files may have them.-->
+
+<!--***DAN: The scope is huge, this is certainly a real research project, and if all you plan is accomplished, it will be more than enough for a final project! I hope the computing tools and approaches you have leared are helping! 
+
+<!--***DAN: Your git use is good in the sense that you have done many commits with sensible messages and used tags. I hope it has been a useful tool!-->
+
+<!--***DAN: I cannot evaluate the code because I am not expert in this area, and there is a lot of it, obviously written over a span of time. This is one reason why unit tests can be so helpful! I am glad to see you have implemented them according to an appropriate framework!-->
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```

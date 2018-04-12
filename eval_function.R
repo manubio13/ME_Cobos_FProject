@@ -5,7 +5,7 @@
 #classification rate, can also be used), and complexity (here evaluated using AICc). 
 
 #Arguments explanation for ku.enm.eval:
-
+#***DAN: these are very nice, detailed, and precise specs on inputs! Well done.
 #- path is the directory in wich the folders containig calibration models are being or were created 
 #- occ.all (character) is the name of the csv file with the calibration occurrences, columns must be: species, longitud, latitud
 #- occ.tra (character) is the name of the csv file with the calibration occurrences, columns must be: species, longitud, latitud

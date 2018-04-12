@@ -3,6 +3,7 @@
 
 #Arguments explanation for ku.enm.mod:
 
+#***DAN: nice, detailed, precise specs of inputs. Likewise for your other functions.
 #- occ.all (character) is the  csv file with all the occurrences, columns must be: species, longitud, latitud
 #- M.var.dir (character) name of the forlder containing folders in wich calibration (M) variables are
 #- out.eval (character) name of the folder were evaluation results were written
