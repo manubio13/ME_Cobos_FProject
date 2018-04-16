@@ -10,9 +10,9 @@ html.eval <- function(path, file.name) {
 "---
 title: \"ku.enm: evaluation results\"
 output:
-html_document:
-toc: true
-toc_depth: 4
+  html_document:
+      toc: true
+      toc_depth: 4
 ---
       
 \```{r setup, include=FALSE}

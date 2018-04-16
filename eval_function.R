@@ -197,12 +197,12 @@ ku.enm.eval <- function(path, occ.all, occ.tra, occ.test, batch, out.eval, omi.v
   proc_res_m <- data.frame(proc_res_m, proc_res_lt1) #adding a new column with the number of AUC ratios interations < 1
   
   ###Omission rates
-  om_rates <- unlist(om_rates)
+  om_rates <- ifelse(om_rates == 2, NA, om_rates)
   
   #####
   #Joining the results
   ku_enm_eval <- as.data.frame(cbind(proc_res_m, om_rates, aiccs))
-  ku_enm_eval <- data.frame(ku_enm_eval[,1], as.numeric(levels(ku_enm_eval[,2]))[ku_enm_eval[,2]], ku_enm_eval[,3], 
+  ku_enm_eval <- data.frame(ku_enm_eval[,1], as.numeric(ku_enm_eval[,2]), ku_enm_eval[,3], 
                             ku_enm_eval[,4], ku_enm_eval[,5], ku_enm_eval[,6], ku_enm_eval[,7], ku_enm_eval[,8])
   colnames(ku_enm_eval) <- c("Model", "Mean_AUC_ratio", "Partial_ROC",#changing column names in the final table
                              paste("Omission_rate_at_", omi.val, "%", sep = ""), "AICc",
@@ -229,7 +229,8 @@ ku.enm.eval <- function(path, occ.all, occ.tra, occ.test, batch, out.eval, omi.v
       }else{
         mesKU <- "\nNone of your models meets the omission rate criterion,\n
         models with the smallest omission rates will be presented\n"
-        ku_enm_best <- ku_enm_bes[order(ku_enm_bes[,4]),][1:100,]
+        
+        ku_enm_best <- ku_enm_bes[order(ku_enm_bes[,4]),][1:10,]
         for (i in 1:length(ku_enm_best[,1])) {
           ku_enm_best[i,6] <- (ku_enm_best[i,5] - min(ku_enm_best[,5], na.rm = TRUE))
           ku_enm_best[i,7] <- (exp(-0.5 * ku_enm_best[i,6])) / (sum(exp(-0.5 * ku_enm_best[i,6]), na.rm = TRUE))
@@ -264,15 +265,15 @@ ku.enm.eval <- function(path, occ.all, occ.tra, occ.test, batch, out.eval, omi.v
         } 
       }else{
         mesKU <- "\nNone of your models meets the omission rates criterion,\n
-        models with the smallest omission rates will be presented\n"
+      models with the smallest omission rates will be presented\n"
         ku_enm_best2 <- ku_enm_bes[order(ku_enm_bes[,4]),][1:10,]
       }
     }
-    }else{
-      cat("\nNo valid model selection criterion has been defined,\n
-          no file containing the best models will be created.\n
-          Select your best models from the complete list.\n")
-    }
+  }else{
+  cat("\nNo valid model selection criterion has been defined,\n
+        no file containing the best models will be created.\n
+        Select your best models from the complete list.\n")
+  }
   
   #####
   #Statistics of the process
@@ -332,7 +333,7 @@ ku.enm.eval <- function(path, occ.all, occ.tra, occ.test, batch, out.eval, omi.v
   ##Plot
   png(paste(dnam, "evaluation_figure.png", sep = "/"), width = 80, height = 80, units = "mm", res = 600)
   par(mar = c(4.5, 4, 0.5, 0.5), cex = 0.5)
-  plot(na.omit(ku_enm_eval[,4])~log(na.omit(ku_enm_eval[,5])),
+  plot(na.omit(ku_enm_eval)[,4]~log(na.omit(ku_enm_eval)[,5]),
        xlab = "Natural logarithm of AICc", ylab = paste("Omission rates at", 
                                                         paste(omi.val, "%", sep = ""), "threshold value", sep = " "),
        las = 1, col = "gray35")
@@ -341,21 +342,21 @@ ku.enm.eval <- function(path, occ.all, occ.tra, occ.test, batch, out.eval, omi.v
   
   if(selection == "OR_AICc" | selection == "AICc" | selection == "OR"){
     if(selection == "OR_AICc"){
-      points(na.omit(ku_enm_best[,4])~log(na.omit(ku_enm_best[,5])),
+      points(na.omit(ku_enm_best)[,4]~log(na.omit(ku_enm_best)[,5]),
              col = "dodgerblue1", pch = 19, cex = 1.5)
       legend("bottomright", legend = c("Selected models", "Non significant models", "All models"),
              pt.cex = c(1.8, 1.5, 1), pch = c(19, 19, 1), col = c("dodgerblue1", "red1", "gray35"), bty = "n",
              inset = c(0.01, 0))
     }
     if(selection == "AICc"){
-      points(na.omit(ku_enm_best1[,4])~log(na.omit(ku_enm_best1[,5])),
+      points(na.omit(ku_enm_best1)[,4]~log(na.omit(ku_enm_best1)[,5]),
              col = "darkorchid1", pch = 19, cex = 1.5)
       legend("bottomright", legend = c("Selected models", "Non significant models", "All models"), 
              pt.cex = c(1.8, 1.5, 1), pch = c(19, 19, 1), col = c("darkorchid1", "red1", "gray35"), bty = "n",
              inset = c(0.01, 0))
     }
     if(selection == "OR"){
-      points(na.omit(ku_enm_best2[,4])~log(na.omit(ku_enm_best2[,5])),
+      points(na.omit(ku_enm_best2)[,4]~log(na.omit(ku_enm_best2)[,5]),
              col = "orange2", pch = 19, cex = 1.5)
       legend("bottomright", legend = c("Selected models", "Non significant models", "All models"),
              pt.cex = c(1.8, 1.5, 1), pch = c(19, 19, 1), col = c("orange2", "red1", "gray35"), bty = "n",
