@@ -30,11 +30,11 @@ if(!require(ku.enm)){ #if require install this package
 
 ## Introduction
 
-Amphibians are among the most threatened species of vertebrates and their conservation status has continue declining during the last decades @blaustein_direct_2010. One of the main concerns for future conservation of these species is Climate Change @li_review_2013. This threat may cause direct or indirect effects, affecting these species phenology, physiology, and distribution patterns @blaustein_complexity_2011. Insular amphibians are specially vulnerable to climate change-related threats because of the particular topographic and climatic characteristics of archipelagos @bellard_vulnerability_2014. 
+Amphibians are among the most threatened species of vertebrates and their conservation status has continue declining during the last decades @blaustein_direct_2010. One of the main concerns for future conservation of these species is Climate Change @li_review_2013. This threat may cause direct or indirect impacts, affecting these species phenology, physiology, and distributional patterns @blaustein_complexity_2011. Insular amphibians are specially vulnerable to climate change-related threats because of the particular topographic and climatic characteristics of archipelagos @bellard_vulnerability_2014. 
 
 *Peltophryne empusa* is one the eight endemic Cuban toads, its current conservation status is Vulnerable owing to its reduced and fragmented area of occupancy @iucn_peltophryne_2004-6. Previous studies have revealed that Cuban amphibians my be under risk because of future changes in climate @cobos_recent_2016. The main potential effect of this phenomenon on these toads that has been predicted is a reduction in their distributional area. Previous evaluations of this species conservation status have not considered potential threats from climate change @iucn_peltophryne_2004-6; hence a new evaluation that considers this potential changes to the future is necessary.
 
-The aim of this project is to re-assess the conservation status of *P. empusa* considering potential effects of climate change on its area of occupancy. To do that ecological niche modeling techniques were used to reconstruct this species current and future potential distribution. Based on these results, a reassessment of its conservation status was performed following the IUCN critera @iucn_iucn_2014 and considering how losses of suitability would affect the area of occupancy of this species.    
+The aim of this project is to re-assess the conservation status of *P. empusa* considering potential effects of climate change on its area of occupancy. To do that ecological niche modeling techniques were used to reconstruct this species current and future potential distribution. Based on these results, a reassessment of its conservation status was performed following the IUCN criteria @iucn_iucn_2014 and considering how losses of suitability would affect the area of occupancy of this species.    
 
 ## Methods
 
@@ -44,8 +44,8 @@ The study area is the entire Cuban archipelago (Figure 1). This insular country 
 
 ```{r study_area, echo=FALSE, message=FALSE, warning=FALSE, fig.height=4, fig.width=6, fig.align="center", fig.cap="Study area, model clibration area, and species occurrences.", cache=TRUE}
 # data
-cuba
-m
+cuba <- rgdal::readGDAL("")
+m <- rgdal::readGDAL("")
 occ <- read.csv("pemp_joint.csv")
 
 # plot
@@ -58,7 +58,7 @@ occ <- read.csv("pemp_joint.csv")
 
 A total of 246 species occurrences were obtained from online databases (GBIF and VertNet), the scientific literature @alonso_bosch_origen_2011, and data from field expeditions. A spatial thinning process was performed to reducing auto-correlation and a total of 64 records remained. These records were split by randomly selecting 25% of them for testing and the remaining for training models.
 
-Bioclimatic variables from the WorldClim database @hijmans_very_2005 were used as environmental predictors for the present scenario (resolution ~1km). For representing future scenarios variables of the representative concentration pathway (RCP) 4.5, for the NCAR-CCSM4 general circulation model (GCM) were used. Future data was obtained from the CGIAR Research Program on Climate Change, Agriculture and Food Security database (CCAFS; available at http://www.ccafs-climate.org/data_spatial_downscaling/). A process of jackknife was performed in Maxent to select three candidate sets of variables that contribute the most to the model and that were not more than 80% correlated with each other.
+Bioclimatic variables from the WorldClim database @hijmans_very_2005 were used as environmental predictors for the present scenario (resolution ~1km). For representing future scenarios bioclimatic variables of the representative concentration pathway (RCP) 4.5, for the NCAR-CCSM4 general circulation model (GCM; @stocker_climate_2013) were used. Future data was obtained from the CGIAR Research Program on Climate Change, Agriculture and Food Security database (CCAFS; available at http://www.ccafs-climate.org/data_spatial_downscaling/). A process of jackknife was performed in Maxent to select three candidate sets of variables that contribute the most to the model and that were not more than 80% correlated with each other.
 
 #### Ecological niche model's calibration
 
@@ -81,7 +81,7 @@ ku.enm.cal(occ.joint = occ_joint, occ.tra = occ_tra, M.var.dir = M_var_dir, batc
            out.dir = cal_dir, reg.mult = reg_mul, f.clas = fea_cs, run = running)
 ```
 
-A process of evaluation was performed for selecting candidate models and their associated parameters. Models were selected based on three distinct criteria: statistical significance (based on partial ROC), prediction ability (omission rates), and model's complexity (AICc). 
+A process of evaluation was performed for selecting candidate models and their associated parameters. Optimal models were selected based on three distinct criteria: statistical significance (based on partial ROC; @peterson_rethinking_2008), prediction ability (omission rate allowing an error *E* = 5%), and model complexity (AICc). 
 
 ```{r evaluation_selection, echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE, results='hide'}
 #Variables with information to be used as arguments
@@ -102,7 +102,7 @@ ku.enm.ceval(path = cal_dir, occ.joint = occ_joint, occ.tra = occ_tra, occ.test 
 
 #### Final model creation
 
-Final model was created using the parameters of the best candidate model chosen, this model was projected to the complete Cuban archipelago. This model was created inside the calibration area, performing five replicates by Bootstrap, and using the model parameters selected, and the complete sets of occurrences. These models will be transferred to future scenarios (i.e., RCP 4.5 and 8.5) using five General Circulation Models @stocker_climate_2013.
+Final models were created using the parameters of the best candidate models, inside the calibration area, performing five replicates by Bootstrap, and using the complete sets of occurrences. These models were transferred to all the Cuban archipelago and the future scenario (i.e., RCP 4.5) in the selected GCM.
 
 ```{r preliminar_models, echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE, results='hide'}
 #Variables with information to be used as arguments
@@ -125,22 +125,22 @@ ku.enm.mod(occ.joint = occ_joint, M.var.dir = M_var_dir, out.eval = out_eval, ba
 
 #### Species conservation status re-evaluation
 
-The species conservation status will be re-evaluated considering the criteria from the International Union for Conservation of Nature @iucn_iucn_2014. Only area of occupancy considering results obtained from current and future potential distribution models, and potential losses of occupied areas based on projections were considered. 
+Continues outputs of final models (current and future) were summarized by calculating the median of their median results. These medians where binarized to obtain suitable and unsuitable areas for the species using the minimum value of suitability in the species occurrences as a threshold. Changes between current and future suitable areas were categorized as stable, lost, and gained areas. The change of suitability was assessed for all known populations of this toad and for areas of occupancy of this species considered in previous assessments @iucn_peltophryne_2004-6. The species conservation status was re-evaluated according to the B2ab(iii) criteria from the International Union for Conservation of Nature @iucn_iucn_2014.  
 
 ```{r model_analysis, echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE}
 # medians of final models
-mod1 <- raster::raster("Final_Models/M_0.9_F_lq_Set2_NE/Peltophryne_empusa_Cuba_median.asc")
-mod2 <- raster::raster("Final_Models/M_4_F_lqpt_Set2_NE/Peltophryne_empusa_Cuba_median.asc")
+mod1 <- raster::raster("Final_Models/M_0.7_F_lqpth_Set2_NE/Peltophryne_empusa_Cuba_median.asc")
+mod2 <- raster::raster("Final_Models/M_0.8_F_lqpth_Set2_NE/Peltophryne_empusa_Cuba_median.asc")
 
-modf1 <- raster::raster("Final_Models/M_0.9_F_lq_Set2_NE/Peltophryne_empusa_ccsm4_4.5_median.asc")
-modf2 <- raster::raster("Final_Models/M_4_F_lqpt_Set2_NE/Peltophryne_empusa_Cuba_median.asc")
+modf1 <- raster::raster("Final_Models/M_0.7_F_lqpth_Set2_NE/Peltophryne_empusa_ccsm4_4.5_median.asc")
+modf2 <- raster::raster("Final_Models/M_0.8_F_lqpth_Set2_NE/Peltophryne_empusa_ccsm4_4.5_median.asc")
 
 med <- raster::calc(raster::stack(mod1, mod2), median)
 medf <- raster::calc(raster::stack(modf1, modf2), median)
 
 # binarization of models
 suit_val <- raster::extract(med, occ[, 2:3])
-thres <- sort(suit_val)[(3 * length(suit_val) / 100) + 1] # threshold based on a 3% error value
+thres <- sort(suit_val)[1] # threshold based on a 3% error value
 threshold <- cbind(c(0, thres), c(thres, 1), c(0, 1))
 thresholdf <- cbind(c(0, thres), c(thres, 1), c(0, 2))
 
@@ -162,6 +162,13 @@ stable_parea <- length(subset(area, area == 3))
 ## populations and future suitability
 suit_chang <- raster::extract(changes, occ[, 2:3])
 occ$Suit_change <- suit_chang
+
+## re-evaluation of conservation status
+pe_iucn <- rgdal::readGDAL("")
+changes_in <- raster::mask(changes, pe_iucn)
+
+areas <- na.omit(raster::getValues(changes_in))
+lost_pe_iucn <- length(subset(areas, areas == 1))
 ```
 
 ## Results
@@ -172,7 +179,7 @@ resb <- read.csv(paste(out_eval, "best_models_OR_AICc.csv", sep = "/"))
 resc <- read.csv(paste(out_eval, "evaluation_results.csv", sep = "/"))
 ```
 
-A total of `r ress[1,1]` of `r length(resc[,1])` candidate models were significant. Since none of the candidate models resulted in omission rates lower than 5%, `r length(resb[,1])` best parameters were chosen by their AICc values (delta AICc < 2).
+A total of `r ress[1,1]` of `r length(resc[,1])` candidate models were significant. Since none of the candidate models resulted in omission rates lower than 5%, `r length(resb[,1])` best parameters were chosen by their AICc values (delta AICc < 2, calculated among the models with the lowest omission rates).
 
 ```{r results2, echo=FALSE, message=FALSE, warning=FALSE, fig.height=4, fig.width=4, fig.align="center", fig.cap="Distribution of all, non-statistically significant, and selected models according to their omission rates and AICc values.", cache=TRUE}
 include_graphics(paste(out_eval, "evaluation_figure", sep = "/"))
@@ -197,6 +204,6 @@ raster::plot(changes, col = c("white", "red", "blue", "grey70"))
 
 ## Discussion
 
-
+This study results revealed that some populations of this toad could be affected owing to the lost of climatic suitability in places where they are currently distributed. The area of occupancy of the species, consequently, would be smaller, specially if migration to new suitable areas is discarded. However, an important factor to be considered is that suitable areas generally over-predict occupied areas, since they represent adequate environmental conditions for the species and not its presence. When   
 
 ## References
