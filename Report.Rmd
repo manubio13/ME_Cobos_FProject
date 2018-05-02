@@ -4,7 +4,7 @@ author: "Marlon E. Cobos"
 date: "May 1, 2018"
 output: pdf_document
 csl: Science.csl
-bibliography: My lib.bib
+bibliography: My Library.bib
 ---
 
 ```{r setup, include=FALSE}
@@ -22,10 +22,11 @@ checkpoint("2018-04-30", checkpointLocation = tempdir())
 
 ```{r packages, echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE, results='hide'}
 #Packages
-if(!require(ku.enm)){ #if require install this package
-  devtools::install_github("manubio13/ku.enm")
-  library(ku.enm)
-}
+packages <- c("ku.enm", "maptools", "rgdal", "rgeos", "rasterVis", "raster",
+              "classInt", "RColorBrewer")
+toInstall <- packages[!packages %in% installed.packages()]
+if(length(toInstall)>0L) install.packages(toInstall)
+lapply(packages, require, character.only = TRUE)
 ```
 
 ## Introduction
@@ -44,8 +45,8 @@ The study area is the entire Cuban archipelago (Figure 1). This insular country 
 
 ```{r study_area, echo=FALSE, message=FALSE, warning=FALSE, fig.height=4, fig.width=6, fig.align="center", fig.cap="Study area, model clibration area, and species occurrences.", cache=TRUE}
 # data
-cuba <- rgdal::readGDAL("")
-m <- rgdal::readGDAL("")
+#cuba <- readGDAL("")
+#m <- readGDAL("")
 occ <- read.csv("pemp_joint.csv")
 
 # plot
@@ -76,7 +77,7 @@ fea_cs <- "basic"
 running <- TRUE
 ```
 
-```{r candidate_models1, echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE, results='hide'}
+```{r candidate_models1, echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE, results='hide',eval=FALSE}
 ku.enm.cal(occ.joint = occ_joint, occ.tra = occ_tra, M.var.dir = M_var_dir, batch = batch_cal,
            out.dir = cal_dir, reg.mult = reg_mul, f.clas = fea_cs, run = running)
 ```
@@ -95,14 +96,14 @@ selc <- "OR_AICc"
 ##Some of the variables used here as arguments were already created for the previous function
 ```
 
-```{r evaluation_selection1, echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE, results='hide'}
+```{r evaluation_selection1, echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE, results='hide',eval=FALSE}
 ku.enm.ceval(path = cal_dir, occ.joint = occ_joint, occ.tra = occ_tra, occ.test = occ_test, batch = batch_cal,
             out.eval = out_eval, omi.val = ov, rand.perc = rp, no.inter = ni, kept = kt, selection = selc)
 ```
 
 #### Final model creation
 
-Final models were created using the parameters of the best candidate models, inside the calibration area, performing five replicates by Bootstrap, and using the complete sets of occurrences. These models were transferred to all the Cuban archipelago and the future scenario (i.e., RCP 4.5) in the selected GCM.
+Final models were created using the parameters of the best candidate models, inside the calibration area, performing five replicates by Bootstrap, and using the complete sets of occurrences. These models were transferred to all the Cuban archipelago and the future scenario (i.e., RCP 4.5) in the selected GCM. Model extrapolations were not allowed to avoid obtaining predictions in areas with non-analogous climatic conditions.
 
 ```{r preliminar_models, echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE, results='hide'}
 #Variables with information to be used as arguments
@@ -113,12 +114,12 @@ rep <- 5
 rtyp <- "Bootstrap"
 ofor <- "logistic"
 pr <- TRUE
-extyp <- "all"
+extyp <- "no_ext"
 jack <- FALSE
 ##Most of the variables used here as arguments were already created for the previous function
 ```
 
-```{r preliminar_models1, echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE, results='hide'}
+```{r preliminar_models1, echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE, results='hide',eval=FALSE}
 ku.enm.mod(occ.joint = occ_joint, M.var.dir = M_var_dir, out.eval = out_eval, batch = bat_fin, rep.n = rep, rep.type = rtyp, 
            jackknife = jack, out.dir = mod_dir, out.format = ofor, project = pr, G.var.dir = G_var_dir, ext.type = extyp)
 ```
@@ -129,46 +130,46 @@ Continues outputs of final models (current and future) were summarized by calcul
 
 ```{r model_analysis, echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE}
 # medians of final models
-mod1 <- raster::raster("Final_Models/M_0.7_F_lqpth_Set2_NE/Peltophryne_empusa_Cuba_median.asc")
-mod2 <- raster::raster("Final_Models/M_0.8_F_lqpth_Set2_NE/Peltophryne_empusa_Cuba_median.asc")
+mod1 <- raster("Final_Models/M_0.7_F_lqpth_Set2_NE/Peltophryne_empusa_Cuba_median.asc")
+mod2 <- raster("Final_Models/M_0.8_F_lqpth_Set2_NE/Peltophryne_empusa_Cuba_median.asc")
 
-modf1 <- raster::raster("Final_Models/M_0.7_F_lqpth_Set2_NE/Peltophryne_empusa_ccsm4_4.5_median.asc")
-modf2 <- raster::raster("Final_Models/M_0.8_F_lqpth_Set2_NE/Peltophryne_empusa_ccsm4_4.5_median.asc")
+modf1 <- raster("Final_Models/M_0.7_F_lqpth_Set2_NE/Peltophryne_empusa_ccsm4_4.5_median.asc")
+modf2 <- raster("Final_Models/M_0.8_F_lqpth_Set2_NE/Peltophryne_empusa_ccsm4_4.5_median.asc")
 
-med <- raster::calc(raster::stack(mod1, mod2), median)
-medf <- raster::calc(raster::stack(modf1, modf2), median)
+med <- calc(stack(mod1, mod2), median)
+medf <- calc(stack(modf1, modf2), median)
 
 # binarization of models
-suit_val <- raster::extract(med, occ[, 2:3])
+suit_val <- extract(med, occ[, 2:3])
 thres <- sort(suit_val)[1] # threshold based on a 3% error value
 threshold <- cbind(c(0, thres), c(thres, 1), c(0, 1))
 thresholdf <- cbind(c(0, thres), c(thres, 1), c(0, 2))
 
-bin <- raster::reclassify(med, threshold)
-binf <- raster::reclassify(medf, thresholdf)
+bin <- reclassify(med, threshold)
+binf <- reclassify(medf, thresholdf)
 
-bina <- na.omit(raster::getValues(bin))
+bina <- na.omit(getValues(bin))
 areabin <- length(subset(bina, bina == 1))
 
 # evaluating impact of climate change
 ## changes in distributional areas
-changes <- raster::calc(raster::stack(bin, binf), sum)
+changes <- calc(stack(bin, binf), sum)
 
-area <- na.omit(raster::getValues(changes))
+area <- na.omit(getValues(changes))
 lost_area <- length(subset(area, area == 1))
 gain_area <- length(subset(area, area == 2))
 stable_parea <- length(subset(area, area == 3))
 
 ## populations and future suitability
-suit_chang <- raster::extract(changes, occ[, 2:3])
+suit_chang <- extract(changes, occ[, 2:3])
 occ$Suit_change <- suit_chang
 
 ## re-evaluation of conservation status
-pe_iucn <- rgdal::readGDAL("")
-changes_in <- raster::mask(changes, pe_iucn)
+#pe_iucn <- readGDAL("")
+#changes_in <- mask(changes, pe_iucn)
 
-areas <- na.omit(raster::getValues(changes_in))
-lost_pe_iucn <- length(subset(areas, areas == 1))
+#areas <- na.omit(getValues(changes_in))
+#lost_pe_iucn <- length(subset(areas, areas == 1))
 ```
 
 ## Results
@@ -179,26 +180,21 @@ resb <- read.csv(paste(out_eval, "best_models_OR_AICc.csv", sep = "/"))
 resc <- read.csv(paste(out_eval, "evaluation_results.csv", sep = "/"))
 ```
 
-A total of `r ress[1,1]` of `r length(resc[,1])` candidate models were significant. Since none of the candidate models resulted in omission rates lower than 5%, `r length(resb[,1])` best parameters were chosen by their AICc values (delta AICc < 2, calculated among the models with the lowest omission rates).
+A total of `r ress[1,1]` of `r length(resc[,1])` candidate models were significant. Since none of the candidate models resulted in omission rates lower than 5%, `r length(resb[,1])` best parameters were chosen by their AICc values (delta AICc < 2, calculated among models with the lowest omission rate).
 
 ```{r results2, echo=FALSE, message=FALSE, warning=FALSE, fig.height=4, fig.width=4, fig.align="center", fig.cap="Distribution of all, non-statistically significant, and selected models according to their omission rates and AICc values.", cache=TRUE}
-include_graphics(paste(out_eval, "evaluation_figure", sep = "/"))
+knitr::include_graphics(paste(out_eval, "evaluation_figure", sep = "/"))
 ```
 
 
-Species distribution probabilities were higher in lowlands. Almost none of the highlands in the archipelago presented suitable conditions for the species. Considering these results and the general trend in climate for this region to the future (higher temperature and lower precipitation), environmental suitability may increase towards the mountains. However, whether the environments in lowlands will be more or less suitable in the future is uncertain. This is why future model projections are one the main results to get in future analyses. Comparisons of current and future Boolean models derived from logistic outputs of Maxent are other results that will allow estimating the area
+Species distribution probabilities were higher in lowlands. Highlands in the archipelago did not present suitable conditions for the species. Considering these results and the general trend in climate for this region to the future (higher temperature and lower precipitation), environmental suitability may increase towards the mountains. However, whether the environments in lowlands will be more or less suitable in the future is uncertain. This is why future model projections are one the main results to get in future analyses. Comparisons of current and future Boolean models derived from logistic outputs of Maxent are other results that will allow estimating the area
 
 ```{r results3, echo=FALSE, message=FALSE, warning=FALSE, fig.height=4, fig.width=6, fig.align="center", fig.cap="Preliminar geographic representation of the ecological niche model and ocurrences for the studied species.", cache=TRUE}
-# data
-mod <- raster("Final_Models/M_0.9_F_lq_Set2_NE/Peltophryne_empusa_Cuba_median.asc")
-
 # ploting
-colfunc<-colorRampPalette(c("red","yellow","royalblue","navyblue"))
-plot(mod, col = colfunc(100))
+#colfunc <- colorRampPalette(c("red","yellow","royalblue","navyblue"))
+plot(changes, col = c("grey95", "red", "blue", "grey70"))
 points(occ$Longitud, occ$Latitud, col = "black", cex = 0.7, pch = 16)
 
-
-raster::plot(changes, col = c("white", "red", "blue", "grey70"))
 ```
 
 
