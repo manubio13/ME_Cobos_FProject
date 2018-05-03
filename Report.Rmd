@@ -71,7 +71,7 @@ box()
 
 #### Species and environmental data
 
-A total of 246 species occurrences were obtained from online databases (GBIF and VertNet), the scientific literature @alonso_bosch_origen_2011, and data from field expeditions. A spatial thinning process was performed to reducing auto-correlation and a total of 64 records remained. These records were split by randomly selecting 25% of them for testing and the remaining for training models.
+A total of 246 species occurrences were obtained from online databases (GBIF and VertNet), the scientific literature @alonso_bosch_origen_2011, and data from field expeditions. A spatial thinning process (i.e., records less that 4 km closer to each other were removed) was performed for reducing auto-correlation and, from that, a total of 64 records remained. These records were split by randomly selecting 25% of them for testing and the remaining for training models.
 
 Bioclimatic variables from the WorldClim database @hijmans_very_2005 were used as environmental predictors for the present scenario (resolution ~1km). For representing future scenarios bioclimatic variables of the representative concentration pathway (RCP) 4.5, for the NCAR-CCSM4 general circulation model (GCM; @stocker_climate_2013) were used. Future data was obtained from the CGIAR Research Program on Climate Change, Agriculture and Food Security database (CCAFS; available at http://www.ccafs-climate.org/data_spatial_downscaling/). A process of jackknife was performed in Maxent to select three candidate sets of variables that contribute the most to the model and that were not more than 80% correlated with each other (Table 1).
 
@@ -85,8 +85,7 @@ set3 <- c("x", "", "x", "x", "x", "")
 var_tab <- data.frame(var_nam, set1, set2, set3)
 
 colnames(var_tab) <- c("Environmental predictors",	"Set 1",	"Set 2", "Set 3")
-kable(var_tab, format = "latex", booktabs = T, 
-      caption = "Sets of environmental predictors used during the process of model calibration.")
+kable(var_tab, caption = "Sets of environmental predictors used during the process of model calibration.")
 ```
 
 #### Ecological niche model calibration
@@ -154,7 +153,7 @@ ku.enm.mod(occ.joint = occ_joint, M.var.dir = M_var_dir, out.eval = out_eval, ba
 
 #### Species conservation status re-evaluation
 
-Continues outputs of final models (current and future) were summarized by calculating the median of their median results. These medians where binarized to obtain suitable and unsuitable areas for the species using the minimum value of suitability in the species occurrences as a threshold. Changes between current and future suitable areas were categorized as stable, lost, and gained areas. The change of suitability was assessed for all known populations of this toad and for areas of occupancy of this species considered in previous assessments @iucn_peltophryne_2004-6. The species conservation status was re-evaluated according to the B2ab(iii) criteria from the International Union for Conservation of Nature @iucn_iucn_2014.  
+Continues outputs of final models (current and future) were summarized by calculating the median of their median results. These medians where binarized to obtain suitable and unsuitable areas for the species using the minimum value of suitability in the species occurrences as a threshold. Changes between current and future suitable areas were categorized as stable, lost, and gained areas. The change of suitability was assessed for all known populations of this toad and for extant areas of this species considered in previous assessments @iucn_peltophryne_2004-6. The species conservation status was re-evaluated according to the B2ab(iii) criteria from the International Union for Conservation of Nature @iucn_iucn_2014. Current and future species area of occupancy were calculated using the know and thinned records for the present and the occurrences that were in stable suitable areas in the future projection of the niche models. The number of records for each time was multiplied by 4 km, since this is the area of the generic grid that is used by IUCN experts to perform these type of analyses @iucn_iucn_2014.   
 
 ```{r model_analysis, echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE}
 # medians of final models
@@ -203,6 +202,11 @@ never_suiti <- length(subset(areai, areai == 0))
 lost_areai <- length(subset(areai, areai == 1))
 gain_areai <- length(subset(areai, areai == 2))
 stable_pareai <- length(subset(areai, areai == 3))
+
+## areas of occupancy
+curr_aoo <- length(occ[, 1]) * 4
+fut_aoo <- length(occ[occ$Suit_change == 3, 1]) * 4
+
 ```
 
 ## Results
@@ -238,7 +242,7 @@ legend("bottomright", legend = c("Selected models", "Non significant models", "A
 
 Suitability values for the species were higher in lowlands. Highlands in the archipelago did not present suitable conditions for the species. Species known occurrences were not completely considered by the IUCN extant areas for this toad. Suitable areas resulted from the models (`r total - gain_area - never_suit` km^2^) also presented broader areas than the extant areas for this species (Figure 3). Product of climate change only ~`r round(stable_parea / (total - gain_area - never_suit) * 100, 2)`% of the initial suitable area will be stable. Around a  `r round(lost_area / (total - gain_area - never_suit) * 100, 2)`%  of the initial suitable area will be lost, and new suitable areas will be ~`r round(gain_area / (total - gain_area - never_suit) * 100, 2)`% of the initial area (Figure 4). 
 
-```{r results3, echo=FALSE, message=FALSE, warning=FALSE, fig.height=2.4, fig.width=6.5, fig.align="center", fig.cap="Suitable areas for the studied species in the Cuban Archipelago. Areas filled with lineal pattern represent the extant areas for the species considered by the IUCN database. Black points represent speccies known localities.", cache=TRUE}
+```{r results3, echo=FALSE, message=FALSE, warning=FALSE, fig.height=2.4, fig.width=6.5, fig.align="center", fig.cap="Current suitable areas for the studied species in the Cuban Archipelago. Areas filled with lineal pattern represent the species' extant areas considered by the IUCN. Black points represent speccies known localities.", cache=TRUE}
 # ploting
 par(mar = c(0, 0, 0.05, 0))
 image(bin, col = c("white", "grey80"), xlab = "", ylab = "",
@@ -251,9 +255,9 @@ legend("bottomleft", legend = "Suitable areas", fill = "grey80",
 box()
 ```
 
-A total of `r length(suit_chang[suit_chang == 1])` species populations will lost suitability in the areas they are currently inhabiting; this is `r length(suit_chang[suit_chang == 1]) / length(suit_chang) * 100`% of the currently known populations. As regards of the IUCN extant areas, almost all these areas are currently suitable for the species, except for highlands. However, in the future, approximately a `r round(lost_areai / (totali - gain_areai - never_suiti) * 100, 2)`% will turn into climatically unsuitable areas. 
+As regards of the IUCN extant areas, almost all these areas are currently suitable for the species, except for highlands. However, in the future, approximately a `r round(lost_areai / (totali - gain_areai - never_suiti) * 100, 2)`% of them will turn into climatically unsuitable areas (Figure 4). A total of `r length(suit_chang[suit_chang == 1])` species populations will lost suitability in the areas they are currently inhabiting; this is `r length(suit_chang[suit_chang == 1]) / length(suit_chang) * 100`% of the currently known populations. The current area of occupancy of the species resulted in `r curr_aoo` km^2^, and this could be reduced to `r fut_aoo` km^2^ due to losses of suitability.
 
-```{r results4, echo=FALSE, message=FALSE, warning=FALSE, fig.height=2.4, fig.width=6.5, fig.align="center", fig.cap="Potential future changes in suitable areas for the studied species. Areas filled with lineal pattern represent the extant areas for the species considered by the IUCN database. Black points represent speccies known localities.", cache=TRUE}
+```{r results4, echo=FALSE, message=FALSE, warning=FALSE, fig.height=2.4, fig.width=6.5, fig.align="center", fig.cap="Potential future changes in suitable areas for the studied species. Areas filled with lineal pattern represent the species' extant areas considered by the IUCN. Black points represent speccies known localities.", cache=TRUE}
 # ploting
 par(mar = c(0, 0, 0.05, 0))
 image(changes, col = c("white", "red", "blue", "grey80"), xlab = "", ylab = "",
@@ -266,13 +270,16 @@ legend("bottomleft", legend = c("Stable", "Loss", "Gain"), fill = c("grey80", "r
 box()
 ```
 
-
 ## Discussion
 
-Based on information from occurrence data, and the one obtained form the IUCN, this species extant and consequently occupied areas may have been underestimated when the species conservation status assessment was performed. However, thinking that the species status is better than the current one may be risky. Suitable areas from ecological niche models resulted broadly distributed in the archipelago, but this areas are only considering climatic conditions. Since, Cuba is a country where most of the natural vegetation cover has been transformed, further analyses are necessary to obtain a better approach to the actual species extant area. 
+Based on information from occurrence data, and the one obtained form the IUCN, this species extant and consequently occupied areas may have been underestimated when the species conservation status assessment was performed. However, thinking that the species status is better (i.e., considering that the species is not vulnerable) because of this fat may be risky. In fact, the new calculations with the know and thinned occurrences resulted in smaller areas of occupancy, which suggest that the species current conservation status of risk may be underestimated. Although the thinned process may have erased some occurrences those may be considered as duplicates owing to the grid cell size (4 km; @iucn_iucn_2014) that was used to calculate the area of occupancy.    
 
-Considering these results and the general trend in climate for this region to the future (higher temperature and lower precipitation), environmental suitability may increase towards the mountains. However, whether the environments in lowlands will be more or less suitable in the future is uncertain. This is why future model projections are one the main results to get in future analyses. Comparisons of current and future Boolean models derived from logistic outputs of Maxent are other results that will allow estimating the area.
+Suitable areas from ecological niche models for this toad were broadly distributed in the archipelago, but this areas are only considering climatic conditions. Suitable areas generally over-predict occupied areas because they represent adequate conditions and not the presence of the species @peterson_ecological_2011-1. Since, Cuba is a country where most of the natural vegetation cover has been transformed, and this toad is associated to certain vegetation conditions @diaz_guitaxonomica_2008, further analyses are necessary to obtain a better approach to the actual species extant area. 
 
-This study results revealed that some populations of this toad could be affected owing to the lost of climatic suitability in places where they are currently distributed. The area of occupancy of the species, consequently, would be smaller, specially if migration to new suitable areas is discarded. However, an important factor to be considered is that suitable areas generally over-predict occupied areas, since they represent adequate environmental conditions for the species and not its presence. When   
+This study results revealed that many populations of this toad could be affected in the future owing to the lost of climatic suitability. The area of occupancy of the species, consequently, will be smaller, as detected in the analysis of this factor alone, specially if migration to new suitable areas is discarded. A similar pattern resulted of analyzing how suitability will change inside the IUCN extant areas for this species. 
+
+If all evidences presented before are considered, the current threatening status of this species is underestimated. Based on the same criteria in which the previous assessment was made @iucn_peltophryne_2004-6, and considering exclusively the current area of occupancy, this toad should be considered as an Endangered species. This criterion (B2) indicates that species with areas of occupancy smaller than 500 km^2^ should be considered as endangered. Other considerations have the same outcome; for instance, if it is considered that the extent of occurrence (B2bi), area of occupancy (B2bii), and area, extent and/or quality of habitat (B2biii), can and will probably decline based in this study projections, the endangered category is ratified.
+
+This findings allowed to identify a potential problem in the current conservation status presented by the IUCN for this toad. Highlighting this problem is not the aim of this research; however, changes in the conservation status of this species may imply an increase in future source investments for conserving this toad. The results presented here may help the experts in future assessments, and this type of analyses may also be replicated for other species to improve the way in which future threats from climate change to species' distribution and populations' exposition are seen. 
 
 ## References
