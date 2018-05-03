@@ -1,7 +1,7 @@
 ---
-title: "Final report"
+title: "Data carpentry final report: Conservation status re-assessment of a threatened Cuban toad"
 author: "Marlon E. Cobos"
-date: "May 1, 2018"
+date: "May 3, 2018"
 output: pdf_document
 csl: Science.csl
 bibliography: My Library.bib
@@ -23,7 +23,7 @@ checkpoint("2018-04-30", checkpointLocation = tempdir())
 ```{r packages, echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE, results='hide'}
 #Packages
 packages <- c("ku.enm", "maptools", "rgdal", "rgeos", "rasterVis", "raster",
-              "classInt", "RColorBrewer")
+              "classInt", "RColorBrewer", "knitr")
 toInstall <- packages[!packages %in% installed.packages()]
 if(length(toInstall)>0L) install.packages(toInstall)
 lapply(packages, require, character.only = TRUE)
@@ -43,15 +43,29 @@ The aim of this project is to re-assess the conservation status of *P. empusa* c
 
 The study area is the entire Cuban archipelago (Figure 1). This insular country is part of the Great Antilles and its geological origin and history is one of the more complex of the world @formel_constitucion_1989.
 
-```{r study_area, echo=FALSE, message=FALSE, warning=FALSE, fig.height=4, fig.width=6, fig.align="center", fig.cap="Study area, model clibration area, and species occurrences.", cache=TRUE}
+```{r data_sarea, echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE, results='hide'}
 # data
-#cuba <- readGDAL("")
-#m <- readGDAL("")
+cuba <- readOGR("shp/cuba_bio.shp")
+m <- readOGR("shp/pol_emp_cu_fin.shp")
 occ <- read.csv("pemp_joint.csv")
+iucn <- readOGR("shp/iucn_pemp.shp")
 
+```
+
+```{r study_area, echo=FALSE, message=FALSE, warning=FALSE, fig.height=2, fig.width=6, fig.align="center", fig.cap="Study area (Cuba), model clibration area, IUCN species extant area,  and species occurrences.", cache=TRUE}
 # plot
+par(mfrow = c(1, 2), mar = c(0, 0, 0, 0))
+plot(cuba, col = "white")
+plot(m, col = "lightblue", add = TRUE)
+points(occ$Longitud, occ$Latitud, pch = 16, col = "grey25", cex = 0.7)
+legend("top", "Model calibration area and species records", cex = 0.8, bty = "n")
+box()
 
-
+plot(cuba, col = "white")
+plot(iucn, col = "lightgreen", add = TRUE)
+points(occ$Longitud, occ$Latitud, pch = 16, col = "grey25", cex = 0.7)
+legend("top", "IUCN extant area and species records", cex = 0.8, bty = "n")
+box()
 ```
 
 
@@ -59,14 +73,28 @@ occ <- read.csv("pemp_joint.csv")
 
 A total of 246 species occurrences were obtained from online databases (GBIF and VertNet), the scientific literature @alonso_bosch_origen_2011, and data from field expeditions. A spatial thinning process was performed to reducing auto-correlation and a total of 64 records remained. These records were split by randomly selecting 25% of them for testing and the remaining for training models.
 
-Bioclimatic variables from the WorldClim database @hijmans_very_2005 were used as environmental predictors for the present scenario (resolution ~1km). For representing future scenarios bioclimatic variables of the representative concentration pathway (RCP) 4.5, for the NCAR-CCSM4 general circulation model (GCM; @stocker_climate_2013) were used. Future data was obtained from the CGIAR Research Program on Climate Change, Agriculture and Food Security database (CCAFS; available at http://www.ccafs-climate.org/data_spatial_downscaling/). A process of jackknife was performed in Maxent to select three candidate sets of variables that contribute the most to the model and that were not more than 80% correlated with each other.
+Bioclimatic variables from the WorldClim database @hijmans_very_2005 were used as environmental predictors for the present scenario (resolution ~1km). For representing future scenarios bioclimatic variables of the representative concentration pathway (RCP) 4.5, for the NCAR-CCSM4 general circulation model (GCM; @stocker_climate_2013) were used. Future data was obtained from the CGIAR Research Program on Climate Change, Agriculture and Food Security database (CCAFS; available at http://www.ccafs-climate.org/data_spatial_downscaling/). A process of jackknife was performed in Maxent to select three candidate sets of variables that contribute the most to the model and that were not more than 80% correlated with each other (Table 1).
 
-#### Ecological niche model's calibration
+```{r table, echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE,}
+var_nam <- c("Temperature seasonality", "Maximum temperature of warmest month", "Minimum temperature of coldest month",
+             "Temperature annual range", "Precipitation of wettest month", "Precipitation of driest month")
+set1 <- c("x", "x", "x", "x", "x", "x")
+set2 <- c("x", "", "x", "x", "x", "x")
+set3 <- c("x", "", "x", "x", "x", "")
+
+var_tab <- data.frame(var_nam, set1, set2, set3)
+
+colnames(var_tab) <- c("Environmental predictors",	"Set 1",	"Set 2", "Set 3")
+kable(var_tab, format = "latex", booktabs = T, 
+      caption = "Sets of environmental predictors used during the process of model calibration.")
+```
+
+#### Ecological niche model calibration
 
 A total of 150 candidate models were evaluated as part of the model calibration process. These models were created in Maxent with distinct parameter settings resulted from combining 3 sets of environmental predictors, 10 regularization multipliers, and 5 feature classes.
 
 ```{r candidate_models, echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE, results='hide'}
-#Variables with information to be used as arguments
+# Variables with information to be used as arguments
 occ_joint <- "pemp_joint.csv"
 occ_tra <- "pemp_tra.csv"
 M_var_dir <- "M"
@@ -96,7 +124,7 @@ selc <- "OR_AICc"
 ##Some of the variables used here as arguments were already created for the previous function
 ```
 
-```{r evaluation_selection1, echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE, results='hide',eval=FALSE}
+```{r evaluation_selection1, echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE, results='hide', eval=FALSE}
 ku.enm.ceval(path = cal_dir, occ.joint = occ_joint, occ.tra = occ_tra, occ.test = occ_test, batch = batch_cal,
             out.eval = out_eval, omi.val = ov, rand.perc = rp, no.inter = ni, kept = kt, selection = selc)
 ```
@@ -140,7 +168,7 @@ med <- calc(stack(mod1, mod2), median)
 medf <- calc(stack(modf1, modf2), median)
 
 # binarization of models
-suit_val <- extract(med, occ[, 2:3])
+suit_val <- raster::extract(med, occ[, 2:3])
 thres <- sort(suit_val)[1] # threshold based on a 3% error value
 threshold <- cbind(c(0, thres), c(thres, 1), c(0, 1))
 thresholdf <- cbind(c(0, thres), c(thres, 1), c(0, 2))
@@ -156,20 +184,14 @@ areabin <- length(subset(bina, bina == 1))
 changes <- calc(stack(bin, binf), sum)
 
 area <- na.omit(getValues(changes))
+total <- length(area)
 lost_area <- length(subset(area, area == 1))
 gain_area <- length(subset(area, area == 2))
 stable_parea <- length(subset(area, area == 3))
 
 ## populations and future suitability
-suit_chang <- extract(changes, occ[, 2:3])
+suit_chang <- raster::extract(changes, occ[, 2:3])
 occ$Suit_change <- suit_chang
-
-## re-evaluation of conservation status
-#pe_iucn <- readGDAL("")
-#changes_in <- mask(changes, pe_iucn)
-
-#areas <- na.omit(getValues(changes_in))
-#lost_pe_iucn <- length(subset(areas, areas == 1))
 ```
 
 ## Results
@@ -178,27 +200,67 @@ occ$Suit_change <- suit_chang
 ress <- read.csv(paste(out_eval, "evaluation_stats.csv", sep = "/"))
 resb <- read.csv(paste(out_eval, "best_models_OR_AICc.csv", sep = "/"))
 resc <- read.csv(paste(out_eval, "evaluation_results.csv", sep = "/"))
+sig <- resc[resc$Partial_ROC <= 0.05, ]
+best <- sig[sig$Ommission_rate_at_5. == min(sig$Ommission_rate_at_5.), ]
+for (i in 1:length(best$delta_AICc)) {
+  best[i, 6] <- best[i, 5] - min(best$AICc)
+}
+obest <- best[best$delta_AICc <= 2, ]
 ```
 
-A total of `r ress[1,1]` of `r length(resc[,1])` candidate models were significant. Since none of the candidate models resulted in omission rates lower than 5%, `r length(resb[,1])` best parameters were chosen by their AICc values (delta AICc < 2, calculated among models with the lowest omission rate).
+A total of `r ress[1,2]` of `r length(resc[,1])` candidate models were statistically significant. Since none of these models resulted in omission rates lower than 5%, `r length(resb[,1])` best parameters were chosen by their AICc values (delta AICc < 2, calculated among significant models with the lowest omission rate; Figure 2). The best models had regularization multiplier values of 0.7 and 0.8; feature classes combinations of linear, quadratic, product, threshold, and hinge, responses; and, they were performed with the third set of variables.
 
-```{r results2, echo=FALSE, message=FALSE, warning=FALSE, fig.height=4, fig.width=4, fig.align="center", fig.cap="Distribution of all, non-statistically significant, and selected models according to their omission rates and AICc values.", cache=TRUE}
-knitr::include_graphics(paste(out_eval, "evaluation_figure", sep = "/"))
+```{r results2, echo=FALSE, message=FALSE, warning=FALSE, fig.height=5, fig.width=5, fig.align="center", fig.cap="Distribution of all candidate models, the non-statistically significant ones, and the selected models according to their omission rates and AICc values.", cache=TRUE}
+par(mar = c(4.5, 4, 0.5, 0.5), cex = 0.8)
+plot(na.omit(resc)[,4]~log(na.omit(resc)[, 5]),
+     xlab = "Natural logarithm of AICc", ylab = "Omission rates at 5% threshold value",
+     las = 1, col = "grey35")
+
+points(na.omit(resc[!resc[, 1] %in% sig[, 1], ])[, 4]~log(na.omit(resc[!resc[, 1] %in% sig[, 1], ])[, 5]),
+       col = "red1", pch = 19, cex = 1.1)
+points(na.omit(obest)[, 4]~log(na.omit(obest)[, 5]),
+       col = "dodgerblue1", pch = 17, cex = 1.4)
+legend("bottomright", legend = c("Selected models", "Non significant models", "All candidate models"),
+       pt.cex = c(1.4, 1.1, 1), pch = c(17, 19, 1), col = c("dodgerblue1", "red1", "gray35"), bty = "n",
+       inset = c(0.01, 0))
 ```
 
+Suitability values for the species were higher in lowlands. Highlands in the archipelago did not present suitable conditions for the species. Species known occurrences were not completely considered by the IUCN extant areas for this toad. Suitable areas resulted from the models (`r total - gain_area`km^2^) also presented broader areas than the extant areas for this species (Figure 3). Product of climate change only ~`r stable_parea / total * 100`% of the initial suitable area will be stable. Around a  `r lost_area / total * 100`%  of the initial suitable area will be lost, and new suitable areas will be ~`r gain_area / total * 100`% of the initial area (Figure 4). 
 
-Species distribution probabilities were higher in lowlands. Highlands in the archipelago did not present suitable conditions for the species. Considering these results and the general trend in climate for this region to the future (higher temperature and lower precipitation), environmental suitability may increase towards the mountains. However, whether the environments in lowlands will be more or less suitable in the future is uncertain. This is why future model projections are one the main results to get in future analyses. Comparisons of current and future Boolean models derived from logistic outputs of Maxent are other results that will allow estimating the area
-
-```{r results3, echo=FALSE, message=FALSE, warning=FALSE, fig.height=4, fig.width=6, fig.align="center", fig.cap="Preliminar geographic representation of the ecological niche model and ocurrences for the studied species.", cache=TRUE}
+```{r results3, echo=FALSE, message=FALSE, warning=FALSE, fig.height=2.4, fig.width=6.5, fig.align="center", fig.cap="Suitable areas for the studied species in the Cuban Archipelago. Areas filled with lineal pattern represent the extant areas for the species considered by the IUCN database. Black points represent speccies known localities.", cache=TRUE}
 # ploting
-#colfunc <- colorRampPalette(c("red","yellow","royalblue","navyblue"))
-plot(changes, col = c("grey95", "red", "blue", "grey70"))
+par(mar = c(0, 0, 0.05, 0))
+image(bin, col = c("white", "grey80"), xlab = "", ylab = "",
+      axes=FALSE)
+plot(cuba, col = "transparent", border = "black", add = TRUE)
+plot(iucn, density = 10, angle = 45, add = TRUE)
 points(occ$Longitud, occ$Latitud, col = "black", cex = 0.7, pch = 16)
+legend("bottomleft", legend = "Suitable areas", fill = "grey80",
+       bty = "n", cex = 0.8)
+box()
+```
 
+A total of `r length(suit_chang[suit_chang == 1])` species populations will lost suitability in the areas that they are currently inhabiting; this is `r length(suit_chang[suit_chang == 1]) / length(suit_chang) * 100`
+
+```{r results4, echo=FALSE, message=FALSE, warning=FALSE, fig.height=2.4, fig.width=6.5, fig.align="center", fig.cap="Potential future changes in suitable areas for the studied species. Areas filled with lineal pattern represent the extant areas for the species considered by the IUCN database. Black points represent speccies known localities.", cache=TRUE}
+# ploting
+par(mar = c(0, 0, 0.05, 0))
+image(changes, col = c("white", "red", "blue", "grey80"), xlab = "", ylab = "",
+      axes=FALSE)
+plot(cuba, col = "transparent", border = "black", add = TRUE)
+plot(iucn, density = 10, angle = 45, add = TRUE)
+points(occ$Longitud, occ$Latitud, col = "black", cex = 0.7, pch = 16)
+legend("bottomleft", legend = c("Stable", "Loss", "Gain"), fill = c("grey80", "red", "blue"),
+       bty = "n", cex = 0.8)
+box()
 ```
 
 
 ## Discussion
+
+Based on information from occurrence data, and the one obtained form the IUCN, this species extant and consequently occupied areas may have been underestimated when the species conservation status assessment was performed. However, thinking that the species status is better than the current one may be risky. Suitable areas from ecological niche models resulted broadly distributed in the archipelago, but this areas are only considering climatic conditions. Since, Cuba is a country where most of the natural vegetation cover has been transformed, further analyses are necessary to obtain a better approach to the actual species extant area. 
+
+Considering these results and the general trend in climate for this region to the future (higher temperature and lower precipitation), environmental suitability may increase towards the mountains. However, whether the environments in lowlands will be more or less suitable in the future is uncertain. This is why future model projections are one the main results to get in future analyses. Comparisons of current and future Boolean models derived from logistic outputs of Maxent are other results that will allow estimating the area.
 
 This study results revealed that some populations of this toad could be affected owing to the lost of climatic suitability in places where they are currently distributed. The area of occupancy of the species, consequently, would be smaller, specially if migration to new suitable areas is discarded. However, an important factor to be considered is that suitable areas generally over-predict occupied areas, since they represent adequate environmental conditions for the species and not its presence. When   
 
