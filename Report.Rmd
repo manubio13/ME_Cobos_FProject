@@ -23,7 +23,7 @@ checkpoint("2018-04-30", checkpointLocation = tempdir())
 ```{r packages, echo=FALSE, cache=TRUE, message=FALSE, warning=FALSE, results='hide'}
 #Packages
 packages <- c("ku.enm", "maptools", "rgdal", "rgeos", "rasterVis", "raster",
-              "classInt", "RColorBrewer", "knitr")
+              "classInt", "RColorBrewer", "knitr", "kableExtra")
 toInstall <- packages[!packages %in% installed.packages()]
 if(length(toInstall)>0L) install.packages(toInstall)
 lapply(packages, require, character.only = TRUE)
@@ -185,6 +185,7 @@ changes <- calc(stack(bin, binf), sum)
 
 area <- na.omit(getValues(changes))
 total <- length(area)
+never_suit <- length(subset(area, area == 0))
 lost_area <- length(subset(area, area == 1))
 gain_area <- length(subset(area, area == 2))
 stable_parea <- length(subset(area, area == 3))
@@ -192,6 +193,16 @@ stable_parea <- length(subset(area, area == 3))
 ## populations and future suitability
 suit_chang <- raster::extract(changes, occ[, 2:3])
 occ$Suit_change <- suit_chang
+
+## extant areas and future suitability
+mas_change <- raster::mask(changes, iucn)
+
+areai <- na.omit(getValues(mas_change))
+totali <- length(areai)
+never_suiti <- length(subset(areai, areai == 0))
+lost_areai <- length(subset(areai, areai == 1))
+gain_areai <- length(subset(areai, areai == 2))
+stable_pareai <- length(subset(areai, areai == 3))
 ```
 
 ## Results
@@ -225,7 +236,7 @@ legend("bottomright", legend = c("Selected models", "Non significant models", "A
        inset = c(0.01, 0))
 ```
 
-Suitability values for the species were higher in lowlands. Highlands in the archipelago did not present suitable conditions for the species. Species known occurrences were not completely considered by the IUCN extant areas for this toad. Suitable areas resulted from the models (`r total - gain_area`km^2^) also presented broader areas than the extant areas for this species (Figure 3). Product of climate change only ~`r stable_parea / total * 100`% of the initial suitable area will be stable. Around a  `r lost_area / total * 100`%  of the initial suitable area will be lost, and new suitable areas will be ~`r gain_area / total * 100`% of the initial area (Figure 4). 
+Suitability values for the species were higher in lowlands. Highlands in the archipelago did not present suitable conditions for the species. Species known occurrences were not completely considered by the IUCN extant areas for this toad. Suitable areas resulted from the models (`r total - gain_area - never_suit` km^2^) also presented broader areas than the extant areas for this species (Figure 3). Product of climate change only ~`r round(stable_parea / (total - gain_area - never_suit) * 100, 2)`% of the initial suitable area will be stable. Around a  `r round(lost_area / (total - gain_area - never_suit) * 100, 2)`%  of the initial suitable area will be lost, and new suitable areas will be ~`r round(gain_area / (total - gain_area - never_suit) * 100, 2)`% of the initial area (Figure 4). 
 
 ```{r results3, echo=FALSE, message=FALSE, warning=FALSE, fig.height=2.4, fig.width=6.5, fig.align="center", fig.cap="Suitable areas for the studied species in the Cuban Archipelago. Areas filled with lineal pattern represent the extant areas for the species considered by the IUCN database. Black points represent speccies known localities.", cache=TRUE}
 # ploting
@@ -240,7 +251,7 @@ legend("bottomleft", legend = "Suitable areas", fill = "grey80",
 box()
 ```
 
-A total of `r length(suit_chang[suit_chang == 1])` species populations will lost suitability in the areas that they are currently inhabiting; this is `r length(suit_chang[suit_chang == 1]) / length(suit_chang) * 100`
+A total of `r length(suit_chang[suit_chang == 1])` species populations will lost suitability in the areas they are currently inhabiting; this is `r length(suit_chang[suit_chang == 1]) / length(suit_chang) * 100`% of the currently known populations. As regards of the IUCN extant areas, almost all these areas are currently suitable for the species, except for highlands. However, in the future, approximately a `r round(lost_areai / (totali - gain_areai - never_suiti) * 100, 2)`% will turn into climatically unsuitable areas. 
 
 ```{r results4, echo=FALSE, message=FALSE, warning=FALSE, fig.height=2.4, fig.width=6.5, fig.align="center", fig.cap="Potential future changes in suitable areas for the studied species. Areas filled with lineal pattern represent the extant areas for the species considered by the IUCN database. Black points represent speccies known localities.", cache=TRUE}
 # ploting
